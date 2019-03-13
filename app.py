@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 from __future__ import division, print_function, unicode_literals
 
-import json
+import os
 import logging
 import string
 import sys
@@ -27,12 +27,8 @@ bot = commands.Bot(
 
 
 def main():
-    # load config
-    with open('config.json', 'r') as f:
-        config = json.load(f)
-
     # configure discord
-    DISCORD_BOT_TOKEN = config['DISCORD_BOT_TOKEN']
+    DISCORD_BOT_TOKEN = os.environ['DISCORD_BOT_TOKEN']
 
     # configure our logger
     root.setLevel(logging.DEBUG)
