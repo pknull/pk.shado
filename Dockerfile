@@ -1,5 +1,7 @@
 FROM python:3.6-alpine
 
+ADD VERSION .
+
 RUN apk add --update \
     git \
     openssh \

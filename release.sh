@@ -28,6 +28,10 @@ NOTICE_FLAG="${CYAN}❯"
 ADJUSTMENTS_MSG="${QUESTION_FLAG} ${CYAN}Now you can make adjustments to ${WHITE}CHANGELOG.md${CYAN}. Then press enter to continue."
 PUSHING_MSG="${NOTICE_FLAG} Pushing new version to the ${WHITE}origin${CYAN}..."
 
+# ensure we're up to date
+git pull
+
+# Update version
 if [ -f VERSION ]; then
     BASE_STRING=`cat VERSION`
     BASE_LIST=(`echo $BASE_STRING | tr '.' ' '`)
@@ -85,6 +89,8 @@ else
 fi
 
 echo -e "${NOTICE_FLAG} Finished."
+
+./build.sh
 
 docker tag $USERNAME/$IMAGE:latest $USERNAME/$IMAGE:$INPUT_STRING
 
