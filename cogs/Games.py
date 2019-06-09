@@ -56,7 +56,7 @@ class Games:
             embed = make_embed(title, hand)
             await self.bot.send_message(ctx.message.channel, embed=embed)
         else:
-            await self.bot.say("Error parsing dice.")
+            await self.bot.say("Error parsing cards.")
 
     @commands.command(pass_context=True)
     async def coin(self, ctx, count=1):
@@ -80,14 +80,14 @@ class Games:
             embed = make_embed(title, result)
             await self.bot.send_message(ctx.message.channel, embed=embed)
         else:
-            await self.bot.say("Error parsing coin.")
+            await self.bot.say("Error parsing eightball.")
 
     @commands.command(pass_context=True)
     async def killer(self, ctx, count=1):
         """Pick a Dead By Daylight Killer!"""
         class Killer:
-            SIDES = ['Trapper', 'Wraith', 'Hillbilly', 'Nurse', 'Huntress', 'Shape', 'Hag', 'Doctor', 'Pig', 'Clown',
-                     'Freddy', 'Leatherface']
+            SIDES = ['Trapper', 'Wraith', 'Hillbilly', 'Nurse', 'Shape', 'Hag', 'Doctor', 'Huntress', 'Cannibal',
+                     'Nightmare', 'Pig', 'Clown', 'Spirit', 'Legion', 'Plague', 'Ghost Face']
         tosser = Tosser(Killer)
         result = tosser.toss(count, True)
         if type(result) is list:
@@ -101,8 +101,9 @@ class Games:
     async def defender(self, ctx, count=1):
         """Pick a Rainbow Six DEFENDER"""
         class Defender:
-            SIDES = ["Caviera", "Ela", "Vigil", "Echo", "Valkyrie", "Maestro", "Tachanka", "Alibi", "Lesion", "Jäger",
-                     "Frost", "Mira", "Smoke", "Bandit", "Mute", "Rook", "Kapkan", "Recruit", "Doc", "Pulse", "Castle"]
+            SIDES = ["Alibi", "Bandit", "Castle", "Caveira", "Clash", "Doc", "Echo", "Ela", "Frost", "Jäger", "Kaid",
+                     "Kapkan", "Lesion", "Maestro", "Mira", "Mozzie", "Mute", "Pulse", "Recruit", "Rook", "Smoke",
+                     "Tachanka", "Valkyrie", "Vigil", "Warden"]
         tosser = Tosser(Defender)
         result = tosser.toss(count, True)
         if type(result) is list:
@@ -116,10 +117,9 @@ class Games:
     async def attacker(self, ctx, count=1):
         """Pick a Rainbow Six ATTACKER"""
         class Attacker:
-            SIDES = ["Sledge", "Thatcher", "Ash", "Thermite", "Twitch", "Montagne", "Glaz", "Fuze", "Blitz", "IQ",
-                     "Buck",
-                     "Blackbeard", "Capitão", "Hibana", "Jackal", "Ying", "Zofia", "Dokkaebi", "Lion", "Finka",
-                     "Recruit"]
+            SIDES = ["Ash", "Blackbeard", "Blitz", "Buck", "Capitão", "Dokkaebi", "Finka", "Fuze", "Glaz", "Gridlock",
+                     "Hibana", "IQ", "Jackal", "Lion", "Maverick", "Montagne", "Nomad", "Nøkk", "Recruit", "Sledge",
+                     "Thatcher", "Thermite", "Twitch", "Ying", "Zofia"]
         tosser = Tosser(Attacker)
         result = tosser.toss(count, True)
         if type(result) is list:

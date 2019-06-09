@@ -1,2 +1,2 @@
 # pk.shado
-~~Kik~~ Discord, python, and shadowrun. Living the outdated meme.
+A discord bot providing some gaming RNG. A reference implementation for other things.
