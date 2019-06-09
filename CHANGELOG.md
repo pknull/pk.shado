@@ -1,3 +1,9 @@
+## 0.9.0 (June 08, 2019)
+  - Version is out of data, updated
+  - Updated lists with latest selections, updated README.
+  - Bump version to 0.8.0.
+  - Bump version to 0.7.0.
+
 ## 0.6.0 (March 13, 2019)
 
 
