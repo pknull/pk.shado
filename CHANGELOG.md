@@ -1,3 +1,6 @@
+## 0.11.0 (June 09, 2019)
+  - Whoops, s/killer/survivor
+
 ## 0.10.0 (June 09, 2019)
   - Updated games to include random killer and survivor perks in DBD
 
