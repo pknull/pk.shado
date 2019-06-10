@@ -1,3 +1,6 @@
+## 0.10.0 (June 09, 2019)
+  - Updated games to include random killer and survivor perks in DBD
+
 ## 0.9.0 (June 08, 2019)
   - Version is out of data, updated
   - Updated lists with latest selections, updated README.
