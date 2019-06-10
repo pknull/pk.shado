@@ -134,7 +134,7 @@ class Games:
 
     @commands.command(pass_context=True)
     async def kperks(self, ctx, count=4):
-        """Pick a Dead By Daylight Survivor Perk!"""
+        """Pick a Dead By Daylight Killer Perk!"""
         class KPerks:
             SIDES = ['A Nurse\'s Calling', 'Agitation', 'Bamboozle', 'Barbecue & Chill',
                      'Beast of Prey', 'Bitter Murmur', 'Bloodhound', 'Blood Warden',
