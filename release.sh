@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 set -ex
 
 # SET THE FOLLOWING VARIABLES
@@ -6,7 +7,7 @@ USERNAME=pknull
 # image name
 IMAGE=rpgbot
 
-# ensure we're up to date
+# ensure we are up to date
 git pull
 
 NOW="$(date +'%B %d, %Y')"
@@ -28,7 +29,7 @@ NOTICE_FLAG="${CYAN}❯"
 ADJUSTMENTS_MSG="${QUESTION_FLAG} ${CYAN}Now you can make adjustments to ${WHITE}CHANGELOG.md${CYAN}. Then press enter to continue."
 PUSHING_MSG="${NOTICE_FLAG} Pushing new version to the ${WHITE}origin${CYAN}..."
 
-# ensure we're up to date
+# ensure we are up to date
 git pull
 
 # Update version
