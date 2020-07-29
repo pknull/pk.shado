@@ -1,6 +1,9 @@
-#!/bin/bash
+set -ex
 
 # SET THE FOLLOWING VARIABLES
-TOKEN="Token"
+# docker hub username
+USERNAME=pknull
+# image name
+IMAGE=rpgbot
 
-sudo docker build . -t dice --build-arg TOKEN=$TOKEN
+docker build -t $USERNAME/$IMAGE:latest .
