@@ -1,4 +1,4 @@
-from cogs.Utils import *
+from .Utils import *
 
 from discord.ext import commands
 from dice_roller.DiceThrower import DiceThrower
@@ -9,7 +9,7 @@ from card_picker.Card import *
 from flipper.Tosser import Tosser
 from flipper.Casts import *
 
-class Games:
+class Games(commands.Cog):
     """Game tools! Custom RNG tools for whatever."""
 
     def __init__(self, bot):

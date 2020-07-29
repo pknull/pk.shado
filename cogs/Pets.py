@@ -1,7 +1,7 @@
-from cogs.Utils import *
+from .Utils import *
 from discord.ext import commands
 
-class Pets():
+class Pets(commands.Cog):
     """Pets pictures!"""
     def __init__(self, bot):
         self.bot = bot

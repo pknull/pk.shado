@@ -1,9 +1,9 @@
 import random
-from cogs.Utils import *
+from .Utils import *
 
 from discord.ext import commands
 
-class Anime():
+class Anime(commands.Cog):
     """Some anime stuff! Like russian roulette for your eyes!"""
 
     def __init__(self, bot):

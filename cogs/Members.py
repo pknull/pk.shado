@@ -1,9 +1,9 @@
-from cogs.Utils import *
+from .Utils import *
 
 from discord.ext import commands
 import random
 
-class Members:
+class Members(commands.Cog):
     """Stuff to randomly pick members from a channel."""
 
     def __init__(self, bot):
