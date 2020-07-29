@@ -26,9 +26,9 @@ class Games(commands.Cog):
                 msg.pop('modified', None)
             title = '🎲 Dice Roll'
             embed = make_embed(title, msg)
-            await self.bot.send_message(ctx.message.channel, embed=embed)
+            await ctx.message.channel.send(embed=embed)
         else:
-            await self.bot.say("Error parsing dice.")
+            await ctx.message.channel.send("Error parsing dice.")
 
     @commands.command(pass_context=True)
     async def card(self, ctx, card: str, count=1):
@@ -54,9 +54,9 @@ class Games(commands.Cog):
         if type(hand) is list:
             title = '🎴 Card Hand ' + card_type[0].upper() + card_type[1:]
             embed = make_embed(title, hand)
-            await self.bot.send_message(ctx.message.channel, embed=embed)
+            await ctx.message.channel.send(embed=embed)
         else:
-            await self.bot.say("Error parsing cards.")
+            await ctx.message.channel.send("Error parsing cards.")
 
     @commands.command(pass_context=True)
     async def coin(self, ctx, count=1):
@@ -66,9 +66,9 @@ class Games(commands.Cog):
         if type(result) is list:
             title = '⭕ Coin Flip'
             embed = make_embed(title, result)
-            await self.bot.send_message(ctx.message.channel, embed=embed)
+            await ctx.message.channel.send(embed=embed)
         else:
-            await self.bot.say("Error parsing coin.")
+            await ctx.message.channel.send("Error parsing coin.")
 
     @commands.command(pass_context=True)
     async def eightball(self, ctx, count=1):
@@ -78,9 +78,9 @@ class Games(commands.Cog):
         if type(result) is list:
             title = '🎱 Eightball'
             embed = make_embed(title, result)
-            await self.bot.send_message(ctx.message.channel, embed=embed)
+            await ctx.message.channel.send(embed=embed)
         else:
-            await self.bot.say("Error parsing eightball.")
+            await ctx.message.channel.send("Error parsing eightball.")
 
     @commands.command(pass_context=True)
     async def killer(self, ctx, count=1):
@@ -93,9 +93,9 @@ class Games(commands.Cog):
         if type(result) is list:
             title = '🗡 Killers'
             embed = make_embed(title, result)
-            await self.bot.send_message(ctx.message.channel, embed=embed)
+            await ctx.message.channel.send(embed=embed)
         else:
-            await self.bot.say("Error parsing killer.")
+            await ctx.message.channel.send("Error parsing killer.")
 
     @commands.command(pass_context=True)
     async def sperks(self, ctx, count=4):
@@ -128,9 +128,9 @@ class Games(commands.Cog):
         if type(result) is list:
             title = '🔣 Survivor Perks'
             embed = make_embed(title, result)
-            await self.bot.send_message(ctx.message.channel, embed=embed)
+            await ctx.message.channel.send(embed=embed)
         else:
-            await self.bot.say("Error parsing survivor perks.")
+            await ctx.message.channel.send("Error parsing survivor perks.")
 
     @commands.command(pass_context=True)
     async def kperks(self, ctx, count=4):
@@ -157,9 +157,9 @@ class Games(commands.Cog):
         if type(result) is list:
             title = '🔣 Killer Perks'
             embed = make_embed(title, result)
-            await self.bot.send_message(ctx.message.channel, embed=embed)
+            await ctx.message.channel.send(embed=embed)
         else:
-            await self.bot.say("Error parsing killer perks.")
+            await ctx.message.channel.send("Error parsing killer perks.")
 
 
     @commands.command(pass_context=True)
@@ -174,9 +174,9 @@ class Games(commands.Cog):
         if type(result) is list:
             title = '🛡️ Defenders'
             embed = make_embed(title, result)
-            await self.bot.send_message(ctx.message.channel, embed=embed)
+            await ctx.message.channel.send(embed=embed)
         else:
-            await self.bot.say("Error parsing defender.")
+            await ctx.message.channel.send("Error parsing defender.")
 
     @commands.command(pass_context=True)
     async def attacker(self, ctx, count=1):
@@ -190,9 +190,9 @@ class Games(commands.Cog):
         if type(result) is list:
             title = '🔫 Attackers'
             embed = make_embed(title, result)
-            await self.bot.send_message(ctx.message.channel, embed=embed)
+            await ctx.message.channel.send(embed=embed)
         else:
-            await self.bot.say("Error parsing attacker.")
+            await ctx.message.channel.send("Error parsing attacker.")
 
     @commands.command(pass_context=True)
     async def toss(self, ctx, items, count=1, unique='t'):
@@ -208,9 +208,9 @@ class Games(commands.Cog):
         if type(result) is list:
             title = '⁉ Lists!'
             embed = make_embed(title, result)
-            await self.bot.send_message(ctx.message.channel, embed=embed)
+            await ctx.message.channel.send(embed=embed)
         else:
-            await self.bot.say("Error parsing list.")
+            await ctx.message.channel.send("Error parsing list.")
 
 def setup(bot):
     bot.add_cog(Games(bot))
