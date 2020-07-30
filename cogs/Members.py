@@ -1,9 +1,9 @@
-from cogs.Utils import *
+from .Utils import *
 
 from discord.ext import commands
 import random
 
-class Members:
+class Members(commands.Cog):
     """Stuff to randomly pick members from a channel."""
 
     def __init__(self, bot):
@@ -13,9 +13,9 @@ class Members:
     @commands.command(pass_context=True)
     async def sr(self, ctx, count=1):
         """Pick a random user from the server."""
-        if ctx.message.server is None:
-            await self.bot.say("You can't do this in a private chat (you're the only one here...)")
-        members = ctx.message.server.members
+        if ctx.message.guild is None:
+            await ctx.message.channel.send("You can't do this in a private chat (you're the only one here...)")
+        members = ctx.message.guild.members
         actives = []
         for member in members:
             if str(member.status) == "online" and str(member.display_name) != self.bot.user.name:
@@ -28,18 +28,18 @@ class Members:
             x += 1
         if type(bag) is list:
             embed = make_embed('👥 Members', bag)
-            await self.bot.send_message(ctx.message.channel, embed=embed)
+            await ctx.message.channel.send(embed=embed)
         else:
-            await self.bot.say("Error parsing attacker.")
+            await ctx.message.channel.send("Error parsing attacker.")
 
     @commands.command(pass_context=True)
     async def vr(self, ctx, amount: int):
         """Pick a random user from the voice channel you're in."""
         # First getting the voice channel object
-        voice_channel = ctx.message.author.voice_channel
+        voice_channel = ctx.message.author.voice.channel
         if not voice_channel:
-            return await self.bot.say("That is not a valid voice channel.")
-        members = voice_channel.voice_members
+            return await ctx.message.channel.send("That is not a valid voice channel.")
+        members = voice_channel.members
         if len(members) < amount:
             return await self.say("Sample larger than population.")
         member_names = [x.display_name for x in members]
@@ -49,7 +49,7 @@ class Members:
             "{} random users from {}".format(str(amount), voice_channel.name),
             msg
         )
-        return await self.bot.send_message(ctx.message.channel, embed=embed)
+        return await ctx.message.channel.send(embed=embed)
 
 
 def setup(bot):

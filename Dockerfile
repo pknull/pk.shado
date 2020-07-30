@@ -1,15 +1,15 @@
-FROM python:3.6-alpine
+FROM python:3.8-slim
 
 ADD VERSION .
-
-RUN apk add --update \
-    git \
-    openssh \
-    gcc gfortran python python-dev py-pip build-base wget freetype-dev libpng-dev openblas-dev
 
 COPY . /app
 WORKDIR /app
 
+RUN apt update
+RUN apt install git -y
 RUN pip install -r requirements.txt
 
-CMD ["python","app.py"]
+ARG TOKEN
+ENV DISCORD_BOT_TOKEN=$TOKEN
+
+CMD ["python3","app.py"]

@@ -54,7 +54,7 @@ async def on_message(message):
     if message.author == bot.user:
         return
 
-    await bot.change_presence(game=discord.Game(name='RNG the Game'))
+    await bot.change_presence(activity=discord.Game(name='RNG the Game'))
 
     # remove bot from message if included (in @botname scenario)
     if bot.user in message.mentions:
@@ -87,7 +87,7 @@ async def on_server_remove(server):
 
 
 @bot.event
-async def on_command_completion(self, ctx):
+async def on_command_completion(ctx):
     root.info('parsed command:%s', ctx.message.content)
 
 
