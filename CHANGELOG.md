@@ -1,3 +1,27 @@
+## 0.12.0 (July 29, 2020)
+  - Bump version to 0.11.0.
+  - Merge pull request #1 from Pascal-0x90/master
+  - Separated local build and build.sh
+  - Merge branch 'master' of github.com:Pascal-0x90/pk.shado
+  - Fixed repo
+  - Update build.sh
+  - Fixed to run on python3.
+  - Fixed to run on python3.
+  - Migrated to new discord.py.
+  - Migrated to new discord.py.
+  - Cogs need to inherit commands.Cog.
+  - Cogs need to inherit commands.Cog.
+  - Bump version to 0.11.0.
+  - Whoops, s/killer/survivor
+  - Bump version to 0.10.0.
+  - Updated games to include random killer and survivor perks in DBD
+  - Bump version to 0.9.0.
+  - Version is out of data, updated
+  - Updated lists with latest selections, updated README.
+  - Removed json configuration in favor of env vars
+  - More automated deploy tweaks
+  - Bump version to 0.6.0.
+
 ## 0.11.0 (July 29, 2020)
   - Merge pull request #1 from Pascal-0x90/master
   - Separated local build and build.sh
