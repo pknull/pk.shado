@@ -18,7 +18,7 @@ class UserData:
         '''
         self.dm = False
         self.pause = True
-        self.drink_break = datetime.timedelta(seconds=60)
+        self.drink_break = datetime.timedelta(seconds=3600)
         self.last_drink = datetime.datetime.now()
         self.total = 0
         self.guild = guild
