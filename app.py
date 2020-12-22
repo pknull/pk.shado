@@ -14,7 +14,7 @@ from discord.ext import commands
 root = logging.getLogger('bot')
 LANGUAGE = "english"
 SENTENCES_COUNT = 2
-startup_extensions = ["Anime", "Pets", "Games", "Members"]
+startup_extensions = ["Anime", "Pets", "Games", "Members", "Thirstyboi"]
 
 bot = commands.Bot(
     command_prefix='!',
