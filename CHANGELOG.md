@@ -1,3 +1,8 @@
+## 0.13.0 (December 21, 2020)
+  - Merge pull request #2 from Pascal-0x90/master
+  - Change remind time to 1 hr.
+  - Added thirsty boi.
+
 ## 0.12.0 (July 29, 2020)
   - Bump version to 0.11.0.
   - Merge pull request #1 from Pascal-0x90/master
