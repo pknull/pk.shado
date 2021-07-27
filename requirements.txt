@@ -1,5 +1,5 @@
-git+https://github.com/pknull/rpg-dice.git
-git+https://github.com/pknull/rpg-card.git
-git+https://github.com/pknull/rpg-flip.git
-discord
+git+https://github.com/pknull/rpg-dice.git@master
+git+https://github.com/pknull/rpg-card.git@master
+git+https://github.com/pknull/rpg-flip.git@master
+discord.py
 requests
