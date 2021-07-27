@@ -1,3 +1,6 @@
+## 0.17.0 (July 27, 2021)
+  - Updated requirements to always require latest master code.
+
 ## 0.13.0 (December 21, 2020)
   - Merge pull request #2 from Pascal-0x90/master
   - Change remind time to 1 hr.
