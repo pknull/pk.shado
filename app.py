@@ -54,7 +54,6 @@ async def on_message(message):
     if message.author == bot.user:
         return
 
-    await bot.change_presence(activity=discord.Game(name='RNG the Game'))
 
     # remove bot from message if included (in @botname scenario)
     if bot.user in message.mentions:
@@ -74,6 +73,7 @@ async def on_message(message):
 @bot.event
 async def on_ready():
     root.info('Logged in as %s, id: %s', bot.user.name, bot.user.id)
+    await bot.change_presence(activity=discord.Game(name='RNG the Game'))
 
 
 @bot.event
