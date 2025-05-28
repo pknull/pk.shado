@@ -90,10 +90,11 @@ async def on_command_error(ctx , error):
         await ctx.send('Command not found.')
     elif isinstance(error, commands.MissingRequiredArgument):
         await ctx.send('Missing required argument.')
-    elif isinstance(error, discord.ext.commands.errors.MissingPermissions) or isinstance(error , discord.Forbidden):
+    elif isinstance(error, commands.MissingPermissions) or isinstance(error, discord.Forbidden):
         await ctx.send('You do not have permission to use this command.')
     else:
-        await ctx.send('An error has occured: ' + error)
+        logging.error('An error occurred: %s', str(error))
+        await ctx.send('Something went wrong. Please try again later.')
 
 @bot.event
 async def on_command_completion(ctx):
