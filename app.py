@@ -60,21 +60,11 @@ async def main():
         await load_extensions()
         await bot.start(DISCORD_BOT_TOKEN)
 
-asyncio.run(main())
-
 @bot.event
 async def on_message(message):
     # we do not want the bot to reply to itself
     if message.author == bot.user:
         return
-
-<<<<<<< Updated upstream
-=======
-    bot.Activity(name='TTRPG Time', type=discord.ActivityType.watching)
-    bot.Client(activity='Playing games')
-
-    await bot.change_presence(activity=discord.Game(name='RNG the Game'))
->>>>>>> Stashed changes
 
     await bot.process_commands(message)
 
@@ -114,3 +104,7 @@ async def killbot(ctx):
     print("Shutting down!")
     await ctx.send("Shutting down.")
     await bot.close()
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
