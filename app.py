@@ -94,7 +94,7 @@ async def on_command_completion(ctx):
 @bot.command(pass_context=True)
 async def killbot(ctx):
     print("Shutting down!")
-    await bot.say("Shutting down.")
+    await ctx.send("Shutting down.")
     await bot.close()
 
 
