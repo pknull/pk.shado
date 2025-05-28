@@ -1,7 +1,6 @@
 # Stdlib imports
 import datetime
 import pickle
-import pickle
 import asyncio
 
 # Third party and local imports
@@ -275,7 +274,7 @@ def dat_export(usrdat, allwchan, filename: str = "usrdat.pickle"):
 
 def dat_import(filename: str = "usrdat.pickle"):
     '''Import data from file.'''
-    with open("userdat.pickle", "rb") as fp:
+    with open(filename, "rb") as fp:
         users, allowed_chan = pickle.load(fp)
     return users, allowed_chan
 
