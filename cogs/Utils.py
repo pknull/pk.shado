@@ -3,11 +3,11 @@ import asyncio
 import aiohttp
 import discord
 
-async def fetch_json(url, *, timeout=10):
+async def fetch_json(url, *, timeout=10, headers=None):
     """Fetch JSON data from a URL asynchronously."""
     try:
         async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=timeout)) as session:
-            async with session.get(url) as resp:
+            async with session.get(url, headers=headers) as resp:
                 resp.raise_for_status()
                 return await resp.json()
     except (aiohttp.ClientError, asyncio.TimeoutError):

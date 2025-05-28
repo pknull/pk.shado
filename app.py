@@ -35,7 +35,20 @@ load_dotenv()
 root = logging.getLogger()
 LANGUAGE = "english"
 SENTENCES_COUNT = 2
-cogs = ["Anime", "Games", "Greetings", "Members", "Passel", "Pets", "Thirstyboi", "CipherOracle", "Cleaner"]
+cogs = [
+    "Anime",
+    "Games",
+    "Greetings",
+    "Members",
+    "Passel",
+    "Pets",
+    "Thirstyboi",
+    "CipherOracle",
+    "Cleaner",
+    "Weather",
+    "Reminders",
+    "Meme",
+]
 
 
 bot = commands.Bot(
