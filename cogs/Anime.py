@@ -71,5 +71,5 @@ class Anime(commands.Cog):
             await ctx.message.channel.send("Error getting picture.")
 
 
-def setup(bot):
-    bot.add_cog(Anime(bot))
+async def setup(bot):
+    await bot.add_cog(Anime(bot))

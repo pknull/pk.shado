@@ -278,7 +278,7 @@ def dat_import(filename: str = "usrdat.pickle"):
         users, allowed_chan = pickle.load(fp)
     return users, allowed_chan
 
-def setup(bot):
+async def setup(bot):
     '''Return the cog object for thirsty boi.'''
     # Init local vars
     users = None
@@ -295,7 +295,7 @@ def setup(bot):
         # Export it out so the file exists
         dat_export(users, allowed_chan)
 
-    bot.add_cog(Thirst(bot, users, allowed_chan))
+    await bot.add_cog(Thirst(bot, users, allowed_chan))
 
 ############ Pretty formatting stuff. Yes this could be a different file but fuck that :D ################
 def read_timedelta(args: list):

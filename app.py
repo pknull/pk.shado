@@ -6,17 +6,24 @@ import logging
 import string
 import sys
 import discord
+import asyncio
+import traceback
+from dotenv import load_dotenv
 
 from discord.ext import commands
 
+# Load environment variables from .env file
+load_dotenv()
 
 # set a few vars
-root = logging.getLogger('bot')
+root = logging.getLogger()
 LANGUAGE = "english"
 SENTENCES_COUNT = 2
-startup_extensions = ["Anime", "Pets", "Games", "Members", "Thirstyboi"]
+cogs = ["Anime", "Games", "Greetings", "Members", "Passel", "Pets", "Thirstyboi", "CipherOracle"]
+
 
 bot = commands.Bot(
+    intents=discord.Intents.all(),
     command_prefix='!',
     description='A bot for gaming, and maybe anime?',
     pm_help=True
@@ -25,28 +32,35 @@ bot = commands.Bot(
 # https://regex101.com/r/SrVpEg/2
 # some base classes
 
+# configure our logger
+root.setLevel(logging.WARN)
+ch = logging.StreamHandler(sys.stdout)
+ch.setLevel(logging.DEBUG)
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+ch.setFormatter(formatter)
+root.addHandler(ch)
 
-def main():
-    # configure discord
-    DISCORD_BOT_TOKEN = os.environ['DISCORD_BOT_TOKEN']
+# configure discord
+DISCORD_BOT_TOKEN = os.environ['DISCORD_BOT_TOKEN']
 
-    # configure our logger
-    root.setLevel(logging.DEBUG)
-    ch = logging.StreamHandler(sys.stdout)
-    ch.setLevel(logging.DEBUG)
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    ch.setFormatter(formatter)
-    root.addHandler(ch)
 
-    for extension in startup_extensions:
+async def load_extensions():
+    for cog in cogs:
+        print('Attempting to load extension ' + cog)
         try:
-            bot.load_extension('cogs.'+extension)
+            await bot.load_extension("cogs." + cog)
         except Exception as e:
             exc = '{}: {}'.format(type(e).__name__, e)
-            print('Failed to load extension {}\n{}'.format(extension, exc))
+            print('Failed to load extension {}\n{}'.format(cog, exc))
+            print(traceback.format_exc())
+            quit()
 
-    bot.run(DISCORD_BOT_TOKEN)
+async def main():
+    async with bot:
+        await load_extensions()
+        await bot.start(DISCORD_BOT_TOKEN)
 
+asyncio.run(main())
 
 @bot.event
 async def on_message(message):
@@ -54,18 +68,13 @@ async def on_message(message):
     if message.author == bot.user:
         return
 
+<<<<<<< Updated upstream
+=======
+    bot.Activity(name='TTRPG Time', type=discord.ActivityType.watching)
+    bot.Client(activity='Playing games')
 
-    # remove bot from message if included (in @botname scenario)
-    if bot.user in message.mentions:
-        directed = True
-        AT_BOT = "<@" + bot.user.id + ">"
-        plain_message = message.content[len(AT_BOT):]
-    else:
-        directed = False
-        plain_message = message.content
-
-    # simplify the message format
-    plain_message = plain_message.lower().strip(string.whitespace)
+    await bot.change_presence(activity=discord.Game(name='RNG the Game'))
+>>>>>>> Stashed changes
 
     await bot.process_commands(message)
 
@@ -85,18 +94,23 @@ async def on_server_join(server):
 async def on_server_remove(server):
     root.info('Bot left: %s', server.name)
 
+@bot.event
+async def on_command_error(ctx , error):
+    if isinstance(error, commands.CommandNotFound):
+        await ctx.send('Command not found.')
+    elif isinstance(error, commands.MissingRequiredArgument):
+        await ctx.send('Missing required argument.')
+    elif isinstance(error, discord.ext.commands.errors.MissingPermissions) or isinstance(error , discord.Forbidden):
+        await ctx.send('You do not have permission to use this command.')
+    else:
+        await ctx.send('An error has occured: ' + error)
 
 @bot.event
 async def on_command_completion(ctx):
     root.info('parsed command:%s', ctx.message.content)
-
 
 @bot.command(pass_context=True)
 async def killbot(ctx):
     print("Shutting down!")
     await ctx.send("Shutting down.")
     await bot.close()
-
-
-if __name__ == '__main__':
-    main()
