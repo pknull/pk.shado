@@ -90,7 +90,7 @@ async def on_command_error(ctx , error):
         await ctx.send('Command not found.')
     elif isinstance(error, commands.MissingRequiredArgument):
         await ctx.send('Missing required argument.')
-    elif isinstance(error, commands.MissingPermissions) or isinstance(error, discord.Forbidden):
+    elif isinstance(error, (commands.MissingPermissions, discord.Forbidden)):
         await ctx.send('You do not have permission to use this command.')
     else:
         logging.error('An error occurred: %s', str(error))
