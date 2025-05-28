@@ -32,7 +32,6 @@ class Members(commands.Cog):
         else:
             await ctx.message.channel.send("Error parsing users.")
 
-<<<<<<< Updated upstream
     @commands.command(pass_context=True)
     async def vr(self, ctx, amount: int):
         """Pick a random user from the voice channel you're in."""
@@ -52,10 +51,5 @@ class Members(commands.Cog):
         )
         return await ctx.message.channel.send(embed=embed)
 
-
-def setup(bot):
-    bot.add_cog(Members(bot))
-=======
 async def setup(bot):
     await bot.add_cog(Members(bot))
->>>>>>> Stashed changes
