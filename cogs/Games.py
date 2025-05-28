@@ -16,10 +16,10 @@ class Games(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    async def setup(bot):
+    async def on_load(self):
         print('I am being loaded!')
 
-    async def teardown(bot):
+    async def on_unload(self):
         print('I am being unloaded!')
 
     @commands.command(pass_context=True)
@@ -53,7 +53,18 @@ class Games(commands.Cog):
             card_type = card
         else:
             card_type = 'standard'
-
+            
+        # Check if user is asking for help
+        if card_type.lower() == 'help':
+            help_msg = "Available card types: " + ", ".join(card_conv.keys())
+            await ctx.message.channel.send(help_msg)
+            return
+            
+        # Check if card type is valid
+        if card_type not in card_conv:
+            await ctx.message.channel.send(f"Invalid card type: '{card_type}'. Available types: {', '.join(card_conv.keys())}")
+            return
+            
         cards = card_conv[card_type]
         deck = Deck(cards)
         deck.create()

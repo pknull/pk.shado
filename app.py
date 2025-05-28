@@ -10,6 +10,22 @@ import asyncio
 import traceback
 from dotenv import load_dotenv
 
+# Set up more detailed logging for debugging
+logging.basicConfig(level=logging.DEBUG,
+                   format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                   handlers=[logging.StreamHandler()])
+
+# Create a single debug logger instance to be used throughout the application
+debug_logger = logging.getLogger('debug')
+debug_logger.setLevel(logging.DEBUG)
+# Remove any existing handlers to prevent duplicate logs
+for handler in debug_logger.handlers[:]:
+    debug_logger.removeHandler(handler)
+# Add a single handler
+debug_logger.addHandler(logging.StreamHandler())
+# Prevent propagation to the root logger to avoid duplicate logs
+debug_logger.propagate = False
+
 from discord.ext import commands
 
 # Load environment variables from .env file
@@ -19,7 +35,7 @@ load_dotenv()
 root = logging.getLogger()
 LANGUAGE = "english"
 SENTENCES_COUNT = 2
-cogs = ["Anime", "Games", "Greetings", "Members", "Passel", "Pets", "Thirstyboi", "CipherOracle"]
+cogs = ["Anime", "Games", "Greetings", "Members", "Passel", "Pets", "Thirstyboi", "CipherOracle", "Cleaner"]
 
 
 bot = commands.Bot(
@@ -33,6 +49,9 @@ bot = commands.Bot(
 # some base classes
 
 # configure our logger
+# Remove any existing handlers to prevent duplicate logs
+for handler in root.handlers[:]:
+    root.removeHandler(handler)
 root.setLevel(logging.WARN)
 ch = logging.StreamHandler(sys.stdout)
 ch.setLevel(logging.DEBUG)
@@ -41,24 +60,42 @@ ch.setFormatter(formatter)
 root.addHandler(ch)
 
 # configure discord
-DISCORD_BOT_TOKEN = os.environ['DISCORD_BOT_TOKEN']
+try:
+    DISCORD_BOT_TOKEN = os.environ['DISCORD_BOT_TOKEN']
+    debug_logger.info("Found DISCORD_BOT_TOKEN in environment variables")
+except KeyError:
+    debug_logger.error("DISCORD_BOT_TOKEN not found in environment variables")
+    # For debugging purposes, set a dummy token
+    DISCORD_BOT_TOKEN = "debug_token"
+    debug_logger.warning("Using dummy token for debugging purposes")
 
 
 async def load_extensions():
     for cog in cogs:
-        print('Attempting to load extension ' + cog)
+        debug_logger.info('Attempting to load extension %s', cog)
         try:
+            debug_logger.debug('Loading extension path: cogs.%s', cog)
             await bot.load_extension("cogs." + cog)
+            debug_logger.info('Successfully loaded extension %s', cog)
         except Exception as e:
             exc = '{}: {}'.format(type(e).__name__, e)
-            print('Failed to load extension {}\n{}'.format(cog, exc))
-            print(traceback.format_exc())
+            debug_logger.error('Failed to load extension %s\n%s', cog, exc)
+            debug_logger.error('Traceback: %s', traceback.format_exc())
             quit()
 
 async def main():
-    async with bot:
-        await load_extensions()
-        await bot.start(DISCORD_BOT_TOKEN)
+    debug_logger.info("Starting bot initialization")
+    try:
+        debug_logger.info("Setting up bot context")
+        async with bot:
+            debug_logger.info("Loading extensions")
+            await load_extensions()
+            debug_logger.info("Starting bot with token")
+            await bot.start(DISCORD_BOT_TOKEN)
+    except Exception as e:
+        debug_logger.error("Error in main function: %s", str(e))
+        debug_logger.error("Traceback: %s", traceback.format_exc())
+        raise
 
 @bot.event
 async def on_message(message):
@@ -66,7 +103,12 @@ async def on_message(message):
     if message.author == bot.user:
         return
 
-    await bot.process_commands(message)
+    try:
+        await bot.process_commands(message)
+    except discord.NotFound:
+        debug_logger.error("Message not found when processing commands.")
+    except Exception as e:
+        debug_logger.error("Unexpected error in on_message: %s", str(e))
 
 
 @bot.event
@@ -103,7 +145,10 @@ async def on_command_completion(ctx):
 @bot.command(pass_context=True)
 async def killbot(ctx):
     print("Shutting down!")
-    await ctx.send("Shutting down.")
+    try:
+        await ctx.send("Shutting down.")
+    except discord.HTTPException as e:
+        debug_logger.error("Failed to send shutdown message: %s", str(e))
     await bot.close()
 
 

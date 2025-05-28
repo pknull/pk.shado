@@ -1,6 +1,8 @@
 import random
+import logging
 from .Utils import fetch_json, get_image_data, make_embed
 from discord.ext import commands
+import discord  # Add missing import
 
 class Anime(commands.Cog):
     """Some anime stuff! Like russian roulette for your eyes!"""

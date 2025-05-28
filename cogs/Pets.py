@@ -1,6 +1,8 @@
 import requests
+import logging
 from .Utils import get_image_data
 from discord.ext import commands
+import discord  # Add missing import
 
 class Pets(commands.Cog):
     def __init__(self, bot):
