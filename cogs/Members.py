@@ -41,7 +41,7 @@ class Members(commands.Cog):
             return await ctx.message.channel.send("That is not a valid voice channel.")
         members = voice_channel.members
         if len(members) < amount:
-            return await self.say("Sample larger than population.")
+            return await ctx.message.channel.send("Sample larger than population.")
         member_names = [x.display_name for x in members]
         msg = random.sample(member_names, int(amount))
 
