@@ -53,7 +53,10 @@ class Cleaner(commands.Cog):
                 # Use bulk delete (more efficient, but only works on messages less than 14 days old)
                 debug_logger.debug("Attempting bulk delete")
                 def is_bot_or_command(message):
-                    return message.author == self.bot.user or message.content.startswith('!')
+                    return (
+                        message.id != status_msg.id
+                        and (message.author == self.bot.user or message.content.startswith('!'))
+                    )
                 
                 try:
                     deleted_messages = await ctx.channel.purge(limit=limit, check=is_bot_or_command)
@@ -80,7 +83,10 @@ class Cleaner(commands.Cog):
                 debug_logger.debug("Using individual message deletion")
                 async for message in ctx.channel.history(limit=limit):
                     # Delete if message is from the bot or starts with command prefix
-                    if message.author == self.bot.user or message.content.startswith('!'):
+                    if (
+                        message.id != status_msg.id
+                        and (message.author == self.bot.user or message.content.startswith('!'))
+                    ):
                         try:
                             debug_logger.debug("Deleting message: %s", message.id)
                             await message.delete()
@@ -141,65 +147,6 @@ class Cleaner(commands.Cog):
             except:
                 pass
         
-        deleted = 0
-        
-        # Determine if we should use bulk delete
-        use_bulk_delete = use_bulk.lower() == "yes"
-        if use_bulk.lower() == "auto":
-            # In auto mode, we'll use bulk delete if available
-            use_bulk_delete = hasattr(ctx.channel, "purge")
-        
-        if use_bulk_delete:
-            # Use bulk delete (more efficient, but only works on messages less than 14 days old)
-            def is_bot_or_command(message):
-                return message.author == self.bot.user or message.content.startswith('!')
-            
-            try:
-                deleted_messages = await ctx.channel.purge(limit=limit, check=is_bot_or_command)
-                deleted = len(deleted_messages)
-            except discord.errors.Forbidden:
-                await status_msg.edit(content="⚠️ I don't have permission to bulk delete messages.")
-                return
-            except discord.errors.NotFound:
-                # This can happen if a message was already deleted
-                await status_msg.edit(content="⚠️ Some messages could not be found. They may have been deleted already.")
-                # Continue with what we can delete
-                pass
-            except Exception as e:
-                await status_msg.edit(content=f"⚠️ Error during bulk delete: {str(e)}")
-                # Fall back to individual deletion
-                use_bulk_delete = False
-        
-        if not use_bulk_delete:
-            # Individual deletion (works on older messages but is slower)
-            async for message in ctx.channel.history(limit=limit):
-                # Delete if message is from the bot or starts with command prefix
-                if message.author == self.bot.user or message.content.startswith('!'):
-                    try:
-                        await message.delete()
-                        deleted += 1
-                        # Add a longer delay to avoid rate limits
-                        await asyncio.sleep(1.2)
-                    except discord.errors.NotFound:
-                        # Message already deleted, continue with others
-                        pass
-                    except discord.errors.Forbidden:
-                        await status_msg.edit(content="⚠️ I don't have permission to delete some messages.")
-                        break
-                    except Exception as e:
-                        # Log other errors but continue
-                        print(f"Error deleting message: {str(e)}")
-                        continue
-        
-        # Update status message with results
-        await status_msg.edit(content=f"✅ Cleaned {deleted} messages!")
-        
-        # Delete status message after 5 seconds
-        await asyncio.sleep(5)
-        try:
-            await status_msg.delete()
-        except:
-            pass
 
 async def setup(bot):
     await bot.add_cog(Cleaner(bot))
