@@ -37,6 +37,7 @@ LANGUAGE = "english"
 SENTENCES_COUNT = 2
 cogs = [
     "Anime",
+    "Astrologer",
     "Games",
     "Greetings",
     "Members",
