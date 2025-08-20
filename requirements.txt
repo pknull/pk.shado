@@ -5,3 +5,5 @@ discord.py
 dotenv
 requests
 openai
+kerykeion==4.26.3
+pytest
