@@ -97,4 +97,6 @@ ENV/
 
 # Rope project settings
 .ropeproject
-usrdat.pickle
+
+# Pickle files
+*.pickle
