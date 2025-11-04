@@ -1,6 +1,3 @@
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
-
 import os
 import logging
 import string
@@ -9,30 +6,26 @@ import discord
 import asyncio
 import traceback
 from dotenv import load_dotenv
-
-# Set up more detailed logging for debugging
-logging.basicConfig(level=logging.DEBUG,
-                   format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                   handlers=[logging.StreamHandler()])
-
-# Create a single debug logger instance to be used throughout the application
-debug_logger = logging.getLogger('debug')
-debug_logger.setLevel(logging.DEBUG)
-# Remove any existing handlers to prevent duplicate logs
-for handler in debug_logger.handlers[:]:
-    debug_logger.removeHandler(handler)
-# Add a single handler
-debug_logger.addHandler(logging.StreamHandler())
-# Prevent propagation to the root logger to avoid duplicate logs
-debug_logger.propagate = False
-
 from discord.ext import commands
 
 # Load environment variables from .env file
 load_dotenv()
 
-# set a few vars
+# Configure logging once with unified settings
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[logging.StreamHandler(sys.stdout)]
+)
+
+# Create a single debug logger instance to be used throughout the application
+debug_logger = logging.getLogger('debug')
+debug_logger.setLevel(logging.DEBUG)
+debug_logger.propagate = False
+
+# Root logger for general app logging
 root = logging.getLogger()
+root.setLevel(logging.WARN)
 LANGUAGE = "english"
 SENTENCES_COUNT = 2
 cogs = [
@@ -59,20 +52,6 @@ bot = commands.Bot(
     pm_help=True
 )
 
-# https://regex101.com/r/SrVpEg/2
-# some base classes
-
-# configure our logger
-# Remove any existing handlers to prevent duplicate logs
-for handler in root.handlers[:]:
-    root.removeHandler(handler)
-root.setLevel(logging.WARN)
-ch = logging.StreamHandler(sys.stdout)
-ch.setLevel(logging.DEBUG)
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-ch.setFormatter(formatter)
-root.addHandler(ch)
-
 # configure discord
 try:
     DISCORD_BOT_TOKEN = os.environ['DISCORD_BOT_TOKEN']
@@ -95,7 +74,7 @@ async def load_extensions():
             exc = '{}: {}'.format(type(e).__name__, e)
             debug_logger.error('Failed to load extension %s\n%s', cog, exc)
             debug_logger.error('Traceback: %s', traceback.format_exc())
-            quit()
+            sys.exit(1)
 
 async def main():
     debug_logger.info("Starting bot initialization")
@@ -141,7 +120,7 @@ async def on_server_remove(server):
     root.info('Bot left: %s', server.name)
 
 @bot.event
-async def on_command_error(ctx , error):
+async def on_command_error(ctx, error):
     if isinstance(error, commands.CommandNotFound):
         await ctx.send('Command not found.')
     elif isinstance(error, commands.MissingRequiredArgument):
@@ -158,11 +137,20 @@ async def on_command_completion(ctx):
 
 @bot.command(pass_context=True)
 async def killbot(ctx):
-    print("Shutting down!")
+    debug_logger.info("Shutting down!")
     try:
         await ctx.send("Shutting down.")
     except discord.HTTPException as e:
         debug_logger.error("Failed to send shutdown message: %s", str(e))
+
+    # Clean up resources
+    try:
+        from cogs.Utils import close_http_session
+        await close_http_session()
+        debug_logger.info("HTTP session closed successfully")
+    except Exception as e:
+        debug_logger.error("Error closing HTTP session: %s", str(e))
+
     await bot.close()
 
 

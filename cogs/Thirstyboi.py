@@ -1,11 +1,14 @@
 # Stdlib imports
 import datetime
-import pickle
+import json
 import asyncio
+import logging
 
 # Third party and local imports
 from .Utils import *
 from discord.ext import commands
+
+logger = logging.getLogger('thirstyboi')
 
 class UserData:
     '''Class to handle user preferences.'''
@@ -29,7 +32,7 @@ class UserData:
         return self.dm
     
     def paused(self):
-        '''Turn pff dm.'''
+        '''Turn off dm.'''
         return self.pause
 
     def toggle_dm(self):
@@ -91,6 +94,36 @@ class Thirst(commands.Cog):
         # Begin background task since object is loaded
         self.bot.loop.create_task(self.autosave())
 
+    def _check_channel_permissions(self, ctx):
+        """Check if command is allowed in this channel/DM. Returns (is_dm, is_allowed)."""
+        is_dm = ctx.guild is None
+        if not is_dm:
+            # Check if guild is in allowed channels
+            if ctx.guild.id not in self.allowed_chan:
+                logger.debug(f"Command not allowed - guild {ctx.guild.id} not in allowed channels")
+                return is_dm, False
+            # Check if channel is in allowed channels for this guild
+            if ctx.channel.id not in self.allowed_chan[ctx.guild.id]:
+                logger.debug(f"Command not allowed - channel {ctx.channel.id} not in allowed channels for guild {ctx.guild.id}")
+                return is_dm, False
+        return is_dm, True
+
+    def _get_or_create_user(self, ctx):
+        """Get existing user or create new UserData for the author."""
+        user_id = ctx.author.id
+        if user_id in self.users:
+            return self.users[user_id]
+
+        # Create new user
+        is_dm = ctx.guild is None
+        if not is_dm:
+            user = UserData(ctx.guild.id, ctx.channel.id)
+        else:
+            user = UserData(None, ctx.channel.id)
+
+        self.users[user_id] = user
+        return user
+
     async def autosave(self):
         '''Auto save the bot information in the background on interval.'''
         while not self.bot.is_closed():
@@ -116,34 +149,13 @@ class Thirst(commands.Cog):
     @commands.command(name="sip", pass_context=True, brief="Tells the bot you've hydrated yourself.")
     async def sip(self, ctx: commands.Context, *time):
         '''Tells the bot you've hydrated yourself'''
-        # Predefined local vars
-        user = None
-        
-        # Check if the user is in a server
-        dm = ctx.guild is None
-        if not dm:
-            # If in server, make sure it is a channel in the server
-            if ctx.guild.id not in self.allowed_chan:
-                print("[Thirst] Command not allowed in channel")
-                return
-            # Else make sure its an allowed channel 
-            elif ctx.channel.id not in self.allowed_chan[ctx.guild.id]:
-                print("[Thirst] Command not allowed in channel")
-                return
-        # Make sure the author is known.
-        if ctx.author.id in self.users:
-            # if they are, grab their info
-            user = self.users[ctx.author.id]
-        else:
-            # Else, create new user
-            if not dm:
-                # If they are in a server
-                user = UserData(ctx.guild.id, ctx.channel.id)
-            else:
-                # If its a personal use in a channel (aka no dm)
-                user = UserData(None, ctx.channel.id)
-            # Add in the user to known users
-            self.users[ctx.author.id] = user
+        # Check permissions
+        dm, is_allowed = self._check_channel_permissions(ctx)
+        if not is_allowed:
+            return
+
+        # Get or create user
+        user = self._get_or_create_user(ctx)
 
         # Check if the user has previous time, then reset (time is a passed in param)
         if time.__len__() > 0:
@@ -174,20 +186,13 @@ class Thirst(commands.Cog):
     @commands.command(name="total", pass_context=True, brief="Displays how many times you have drank water.")
     async def total(self, ctx: commands.Context):
         '''Tells the user how many times they have drank.'''
-        dm = ctx.guild is None
-        if not dm:
-            if ctx.guild.id not in self.allowed_chan:
-                return
-            if ctx.channel.id not in self.allowed_chan[ctx.guild.id]:
-                return
-        if ctx.author.id in self.users:
-                user = self.users[ctx.author.id]
-        else:
-            if not dm:
-                user = UserData(ctx.guild.id, ctx.channel.id)
-            else:
-                user = UserData(None, ctx.channel.id)
-            self.users[ctx.author.id] = user
+        # Check permissions
+        dm, is_allowed = self._check_channel_permissions(ctx)
+        if not is_allowed:
+            return
+
+        # Get or create user
+        user = self._get_or_create_user(ctx)
 
         if user.paused():
             await self.stop(ctx)
@@ -201,20 +206,13 @@ class Thirst(commands.Cog):
     @commands.command(name="stop", pass_context=True)
     async def stop(self, ctx: commands.Context):
         '''Stops the bot from sending users messages.'''
-        dm = ctx.guild is None
-        if not dm:
-            if ctx.guild.id not in self.allowed_chan:
-                return
-            if ctx.channel.id not in self.allowed_chan[ctx.guild.id]:
-                return
-        if ctx.author.id in self.users:
-            user = self.users[ctx.author.id]
-        else:
-            if not dm:
-                user = UserData(ctx.guild.id, ctx.channel.id)
-            else:
-                user = UserData(None, ctx.channel.id)
-            self.users[ctx.author.id] = user
+        # Check permissions
+        dm, is_allowed = self._check_channel_permissions(ctx)
+        if not is_allowed:
+            return
+
+        # Get or create user
+        user = self._get_or_create_user(ctx)
 
         if (dm and user.can_dm()) or not dm:
             user.toggle_pause()
@@ -226,20 +224,13 @@ class Thirst(commands.Cog):
     @commands.command(name="dmme", pass_context=True)
     async def dmme(self, ctx: commands.Context):
         '''Start the bot sending messages to a user.'''
-        dm = ctx.guild is None
-        if not dm:
-            if ctx.guild.id not in self.allowed_chan:
-                return
-            if ctx.channel.id not in self.allowed_chan[ctx.guild.id]:
-                return
-        if ctx.author.id in self.users:
-            user = self.users[ctx.author.id]
-        else:
-            if not dm:
-                user = UserData(ctx.guild.id, ctx.channel.id)
-            else:
-                user = UserData(None, ctx.channel.id)
-            self.users[ctx.author.id] = user
+        # Check permissions
+        dm, is_allowed = self._check_channel_permissions(ctx)
+        if not is_allowed:
+            return
+
+        # Get or create user
+        user = self._get_or_create_user(ctx)
 
         if user.paused():
             await self.stop(ctx)
@@ -267,16 +258,72 @@ class Thirst(commands.Cog):
             self.allowed_chan[guild] = {channel}
             await ctx.send("Added <#%i> to the list of allowed channels" % channel)
 
-def dat_export(usrdat, allwchan, filename: str = "usrdat.pickle"):
-    '''Export data to file.'''
-    with open(filename, "wb") as fp:
-        pickle.dump([usrdat, allwchan], fp)
+def dat_export(usrdat, allwchan, filename: str = "data/thirstyboi_data.json"):
+    """Export data to JSON file."""
+    import os
+    os.makedirs(os.path.dirname(filename), exist_ok=True)
 
-def dat_import(filename: str = "usrdat.pickle"):
-    '''Import data from file.'''
-    with open(filename, "rb") as fp:
-        users, allowed_chan = pickle.load(fp)
-    return users, allowed_chan
+    # Convert UserData objects to dictionaries and datetime objects to ISO strings
+    user_data_dict = {}
+    for user_id, user_obj in usrdat.items():
+        user_data_dict[str(user_id)] = {
+            'dm': user_obj.dm,
+            'pause': user_obj.pause,
+            'drink_break_seconds': user_obj.drink_break.total_seconds(),
+            'last_drink': user_obj.last_drink.isoformat(),
+            'total': user_obj.total,
+            'guild': user_obj.guild,
+            'channel': user_obj.channel,
+            'reminded': user_obj.reminded
+        }
+
+    # Convert set to list for JSON serialization
+    allowed_chan_dict = {}
+    for guild_id, channel_set in allwchan.items():
+        allowed_chan_dict[str(guild_id)] = list(channel_set)
+
+    data = {
+        'users': user_data_dict,
+        'allowed_channels': allowed_chan_dict
+    }
+
+    with open(filename, 'w') as fp:
+        json.dump(data, fp, indent=2)
+
+def dat_import(filename: str = "data/thirstyboi_data.json"):
+    """Import data from JSON file."""
+    try:
+        with open(filename, 'r') as fp:
+            data = json.load(fp)
+
+        # Convert dictionaries back to UserData objects
+        users = {}
+        for user_id_str, user_dict in data.get('users', {}).items():
+            user = UserData(
+                guild=user_dict.get('guild'),
+                channel=user_dict.get('channel')
+            )
+            user.dm = user_dict.get('dm', False)
+            user.pause = user_dict.get('pause', True)
+            user.drink_break = datetime.timedelta(seconds=user_dict.get('drink_break_seconds', 3600))
+            user.last_drink = datetime.datetime.fromisoformat(user_dict.get('last_drink'))
+            user.total = user_dict.get('total', 0)
+            user.reminded = user_dict.get('reminded', False)
+            users[int(user_id_str)] = user
+
+        # Convert list back to set
+        allowed_chan = {}
+        for guild_id_str, channel_list in data.get('allowed_channels', {}).items():
+            allowed_chan[int(guild_id_str)] = set(channel_list)
+
+        return users, allowed_chan
+
+    except FileNotFoundError:
+        logger.info("No existing thirstyboi data file found, starting fresh")
+        return {}, {}
+    except Exception as e:
+        logger.error(f"Error loading thirstyboi data: {e}")
+        return {}, {}
 
 async def setup(bot):
     '''Return the cog object for thirsty boi.'''
@@ -297,7 +344,7 @@ async def setup(bot):
 
     await bot.add_cog(Thirst(bot, users, allowed_chan))
 
-############ Pretty formatting stuff. Yes this could be a different file but fuck that :D ################
+############ Pretty formatting utilities ################
 def read_timedelta(args: list):
     keys = ["D", "M", "S", "H"]
     units = {key: 0 for key in keys}

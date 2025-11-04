@@ -2,12 +2,23 @@
 import random
 import openai
 import os
+import logging
 from discord.ext import commands
 
+logger = logging.getLogger('cipher_oracle')
+
+
 class CipherOracle(commands.Cog):
+    """Cipher-based divination and mystical readings."""
+
     def __init__(self, bot):
         self.bot = bot
         openai.api_key = os.getenv("OPENAI_API_KEY")
+        self.custom_uri = os.getenv("CIPHER_ORACLE_API_URI", None)
+
+        if not openai.api_key:
+            logger.warning("OPENAI_API_KEY not set - cipher readings will not work")
+
         self.descriptions = {
             '00000': 'The Seed: Untapped potential, the beginning of a personal journey.',
             '00001': 'The Shadow: Personal doubts, inner fears, and unresolved issues.',
@@ -51,7 +62,19 @@ class CipherOracle(commands.Cog):
         hex_value = hex(int(bins, 2))[2:].upper().zfill(4)
         return hex_value
 
-    async def interpret_reading(self, hexagram, past, present, future):
+    async def interpret_reading(self, hexagram: str, past: str, present: str, future: str) -> str:
+        """
+        Generate AI interpretation of cipher reading.
+
+        Args:
+            hexagram: Hexagram code
+            past: Past cipher code
+            present: Present cipher code
+            future: Future cipher code
+
+        Returns:
+            Interpretation string
+        """
         prompt = (
             "You are a wise being who walks between worlds, offering insight with subtle, symbolic language.\n\n"
             "Provide a contemplative interpretation using metaphor and imagery based on this cipher reading:\n\n"
@@ -64,7 +87,11 @@ class CipherOracle(commands.Cog):
         )
 
         try:
-            client = openai.OpenAI()
+            if self.custom_uri:
+                client = openai.OpenAI(base_url=self.custom_uri)
+            else:
+                client = openai.OpenAI()
+
             response = client.chat.completions.create(
                 model="gpt-3.5-turbo",
                 messages=[{"role": "user", "content": prompt}],
@@ -73,12 +100,17 @@ class CipherOracle(commands.Cog):
 
             return response.choices[0].message.content.strip()
         except openai.APIError as e:
+            logger.error(f"OpenAI API error: {e}")
             return f"An API error occurred: {e}"
         except Exception as e:
+            logger.error(f"Unexpected error in cipher reading: {e}")
             return f"An unexpected error occurred: {e}"
 
     @commands.command(name='cipher')
     async def cipher(self, ctx):
+        """Generate a mystical cipher reading with AI interpretation."""
+        logger.debug(f"Cipher reading requested by {ctx.author.id}")
+
         (past, present, future), bins = self.generate_codes()
         hexagram = self.generate_hexagram(bins)
         interpretation = await self.interpret_reading(hexagram, past, present, future)
