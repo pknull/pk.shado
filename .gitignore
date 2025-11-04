@@ -100,3 +100,7 @@ ENV/
 
 # Pickle files
 *.pickle
+
+# User data files (JSON) - exclude user data but keep config files
+data/astrologer_birth_data.json
+data/thirstyboi_data.json

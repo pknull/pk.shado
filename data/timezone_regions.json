@@ -1,0 +1,38 @@
+{
+  "America/Los_Angeles": {
+    "lat_range": [32, 49],
+    "lon_range": [-125, -114]
+  },
+  "America/Phoenix": {
+    "lat_range": [31, 37],
+    "lon_range": [-115, -109]
+  },
+  "America/Denver": {
+    "lat_range": [31, 49],
+    "lon_range": [-109, -102]
+  },
+  "America/Chicago": {
+    "lat_range": [25, 49],
+    "lon_range": [-104, -80]
+  },
+  "America/New_York": {
+    "lat_range": [24, 47],
+    "lon_range": [-85, -66]
+  },
+  "Europe/London": {
+    "lat_range": [49, 61],
+    "lon_range": [-11, 2]
+  },
+  "Europe/Paris": {
+    "lat_range": [42, 51],
+    "lon_range": [-5, 8]
+  },
+  "Europe/Berlin": {
+    "lat_range": [47, 55],
+    "lon_range": [6, 15]
+  },
+  "UTC": {
+    "lat_range": [-90, 90],
+    "lon_range": [-180, 180]
+  }
+}

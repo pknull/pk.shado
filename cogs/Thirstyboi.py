@@ -1,6 +1,6 @@
 # Stdlib imports
 import datetime
-import pickle
+import json
 import asyncio
 import logging
 
@@ -258,16 +258,72 @@ class Thirst(commands.Cog):
             self.allowed_chan[guild] = {channel}
             await ctx.send("Added <#%i> to the list of allowed channels" % channel)
 
-def dat_export(usrdat, allwchan, filename: str = "usrdat.pickle"):
-    '''Export data to file.'''
-    with open(filename, "wb") as fp:
-        pickle.dump([usrdat, allwchan], fp)
+def dat_export(usrdat, allwchan, filename: str = "data/thirstyboi_data.json"):
+    """Export data to JSON file."""
+    import os
+    os.makedirs(os.path.dirname(filename), exist_ok=True)
 
-def dat_import(filename: str = "usrdat.pickle"):
-    '''Import data from file.'''
-    with open(filename, "rb") as fp:
-        users, allowed_chan = pickle.load(fp)
-    return users, allowed_chan
+    # Convert UserData objects to dictionaries and datetime objects to ISO strings
+    user_data_dict = {}
+    for user_id, user_obj in usrdat.items():
+        user_data_dict[str(user_id)] = {
+            'dm': user_obj.dm,
+            'pause': user_obj.pause,
+            'drink_break_seconds': user_obj.drink_break.total_seconds(),
+            'last_drink': user_obj.last_drink.isoformat(),
+            'total': user_obj.total,
+            'guild': user_obj.guild,
+            'channel': user_obj.channel,
+            'reminded': user_obj.reminded
+        }
+
+    # Convert set to list for JSON serialization
+    allowed_chan_dict = {}
+    for guild_id, channel_set in allwchan.items():
+        allowed_chan_dict[str(guild_id)] = list(channel_set)
+
+    data = {
+        'users': user_data_dict,
+        'allowed_channels': allowed_chan_dict
+    }
+
+    with open(filename, 'w') as fp:
+        json.dump(data, fp, indent=2)
+
+def dat_import(filename: str = "data/thirstyboi_data.json"):
+    """Import data from JSON file."""
+    try:
+        with open(filename, 'r') as fp:
+            data = json.load(fp)
+
+        # Convert dictionaries back to UserData objects
+        users = {}
+        for user_id_str, user_dict in data.get('users', {}).items():
+            user = UserData(
+                guild=user_dict.get('guild'),
+                channel=user_dict.get('channel')
+            )
+            user.dm = user_dict.get('dm', False)
+            user.pause = user_dict.get('pause', True)
+            user.drink_break = datetime.timedelta(seconds=user_dict.get('drink_break_seconds', 3600))
+            user.last_drink = datetime.datetime.fromisoformat(user_dict.get('last_drink'))
+            user.total = user_dict.get('total', 0)
+            user.reminded = user_dict.get('reminded', False)
+            users[int(user_id_str)] = user
+
+        # Convert list back to set
+        allowed_chan = {}
+        for guild_id_str, channel_list in data.get('allowed_channels', {}).items():
+            allowed_chan[int(guild_id_str)] = set(channel_list)
+
+        return users, allowed_chan
+
+    except FileNotFoundError:
+        logger.info("No existing thirstyboi data file found, starting fresh")
+        return {}, {}
+    except Exception as e:
+        logger.error(f"Error loading thirstyboi data: {e}")
+        return {}, {}
 
 async def setup(bot):
     '''Return the cog object for thirsty boi.'''
