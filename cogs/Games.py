@@ -1,6 +1,7 @@
 from .Utils import *
 
 import discord
+import logging
 from discord.ext import commands
 from dice_roller.DiceThrower import DiceThrower
 
@@ -10,6 +11,8 @@ from card_picker.Card import *
 from flipper.Tosser import Tosser
 from flipper.Casts import *
 
+logger = logging.getLogger('games')
+
 class Games(commands.Cog):
     """Game tools! Custom RNG tools for whatever."""
 
@@ -17,17 +20,17 @@ class Games(commands.Cog):
         self.bot = bot
 
     async def on_load(self):
-        print('I am being loaded!')
+        logger.info('Games cog loaded')
 
     async def on_unload(self):
-        print('I am being unloaded!')
+        logger.info('Games cog unloaded')
 
     @commands.command(pass_context=True)
     async def dice(self, ctx, roll='1d1'):
         """Roll some dice! Great for RPG and such.
         See here for the roll syntax: https://github.com/pknull/rpg-dice"""
         msg = DiceThrower().throw(roll)
-        print(msg)
+        logger.debug(f"Dice roll result: {msg}")
         if type(msg) is dict:
             msg['roller'] = ctx.message.author
             if msg['natural'] == msg['modified']:

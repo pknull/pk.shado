@@ -7,6 +7,7 @@ import asyncio
 import math
 import hashlib
 import json
+import logging
 from datetime import datetime, timezone
 from typing import Dict, Any, Optional, Tuple
 import time
@@ -21,18 +22,20 @@ import re
 from PIL import Image
 import cairosvg
 
+logger = logging.getLogger('astrologer')
+
 class Astrologer(commands.Cog):
     def __init__(self, bot, user_birth_data=None):
         self.bot = bot
         openai.api_key = os.getenv("OPENAI_API_KEY")
         self.custom_uri = os.getenv("ASTROLOGER_API_URI", None)
-        
+
         # Configure Kerykeion with Geonames username from environment
         self.geonames_username = os.getenv("GEONAMES_USERNAME")
         if self.geonames_username:
-            print(f"DEBUG: Using Geonames username: {self.geonames_username}")
+            logger.info(f"Using Geonames username: {self.geonames_username}")
         else:
-            print("WARNING: No GEONAMES_USERNAME environment variable found - using default")
+            logger.warning("No GEONAMES_USERNAME environment variable found - using default")
             self.geonames_username = None
             
         # Load existing birth data or start with empty dict
@@ -140,18 +143,18 @@ class Astrologer(commands.Cog):
             timezone_suggests_us = tz_str.startswith('America/')
             timezone_suggests_europe = tz_str.startswith('Europe/')
             
-            print(f"DEBUG: Location context analysis:")
-            print(f"  - Input suggests US: {input_suggests_us}")
-            print(f"  - Input suggests Europe: {input_suggests_europe}")
-            print(f"  - Timezone suggests US: {timezone_suggests_us}")
-            print(f"  - Timezone suggests Europe: {timezone_suggests_europe}")
-            
+            logger.debug(f"Location context analysis:")
+            logger.debug(f"  - Input suggests US: {input_suggests_us}")
+            logger.debug(f"  - Input suggests Europe: {input_suggests_europe}")
+            logger.debug(f"  - Timezone suggests US: {timezone_suggests_us}")
+            logger.debug(f"  - Timezone suggests Europe: {timezone_suggests_europe}")
+
             # Major region mismatch detection
             if input_suggests_us and timezone_suggests_europe:
-                print(f"DEBUG: MAJOR MISMATCH - US location input returned European timezone!")
+                logger.error(f"MAJOR MISMATCH - US location input returned European timezone!")
                 return False
             if input_suggests_europe and timezone_suggests_us:
-                print(f"DEBUG: MAJOR MISMATCH - European location input returned US timezone!")
+                logger.error(f"MAJOR MISMATCH - European location input returned US timezone!")
                 return False
         
         # Get expected region for timezone
@@ -168,22 +171,22 @@ class Astrologer(commands.Cog):
         lat_valid = lat_min <= lat <= lat_max
         lon_valid = lon_min <= lon <= lon_max
         
-        print(f"DEBUG: Timezone validation for {tz_str}:")
-        print(f"  - Expected lat range: {lat_min} to {lat_max}, actual: {lat} ({'PASS' if lat_valid else 'FAIL'})")
-        print(f"  - Expected lon range: {lon_min} to {lon_max}, actual: {lon} ({'PASS' if lon_valid else 'FAIL'})")
+        logger.debug(f"Timezone validation for {tz_str}:")
+        logger.debug(f"  - Expected lat range: {lat_min} to {lat_max}, actual: {lat} ({'PASS' if lat_valid else 'FAIL'})")
+        logger.debug(f"  - Expected lon range: {lon_min} to {lon_max}, actual: {lon} ({'PASS' if lon_valid else 'FAIL'})")
         
         return lat_valid and lon_valid
 
     def _geonames_api_geocode(self, location_str: str) -> Optional[Tuple[float, float, str]]:
         """Direct Geonames API geocoding with proper error handling."""
         if not self.geonames_username:
-            print("DEBUG: No Geonames username configured, skipping API call")
+            logger.debug("No Geonames username configured, skipping API call")
             return None
-            
+
         try:
             # Clean location string for API call
             location_query = location_str.strip()
-            print(f"DEBUG: Calling Geonames API for: '{location_query}'")
+            logger.debug(f"Calling Geonames API for: '{location_query}'")
             
             # Geonames API search endpoint
             url = "http://api.geonames.org/searchJSON"
@@ -197,12 +200,12 @@ class Astrologer(commands.Cog):
             
             response = requests.get(url, params=params, timeout=10)
             response.raise_for_status()
-            
+
             data = response.json()
-            print(f"DEBUG: Geonames API response: {json.dumps(data, indent=2)}")
-            
+            logger.debug(f"Geonames API response: {json.dumps(data, indent=2)}")
+
             if 'geonames' not in data or not data['geonames']:
-                print(f"DEBUG: No results found for '{location_query}'")
+                logger.debug(f"No results found for '{location_query}'")
                 return None
                 
             # Get the best result
@@ -213,20 +216,20 @@ class Astrologer(commands.Cog):
             # Get timezone using timezonefinder
             timezone_str = self.timezone_finder.timezone_at(lat=lat, lng=lon)
             if not timezone_str:
-                print(f"DEBUG: Could not determine timezone for {lat}, {lon}")
+                logger.debug(f"Could not determine timezone for {lat}, {lon}")
                 timezone_str = "UTC"
-            
-            print(f"DEBUG: Geonames API success: {result['name']}, {result.get('adminName1', '')}, {result.get('countryName', '')} -> {lat}, {lon}, {timezone_str}")
+
+            logger.debug(f"Geonames API success: {result['name']}, {result.get('adminName1', '')}, {result.get('countryName', '')} -> {lat}, {lon}, {timezone_str}")
             return lat, lon, timezone_str
-            
+
         except requests.exceptions.RequestException as e:
-            print(f"DEBUG: Geonames API request error: {e}")
+            logger.error(f"Geonames API request error: {e}")
             return None
         except (KeyError, ValueError, TypeError) as e:
-            print(f"DEBUG: Geonames API response parsing error: {e}")
+            logger.error(f"Geonames API response parsing error: {e}")
             return None
         except Exception as e:
-            print(f"DEBUG: Unexpected Geonames API error: {e}")
+            logger.error(f"Unexpected Geonames API error: {e}")
             return None
 
     def _manual_location_lookup(self, location_str: str) -> Optional[Tuple[float, float, str]]:
@@ -284,21 +287,21 @@ class Astrologer(commands.Cog):
         # Direct lookup
         if location_lower in manual_coords:
             lat, lon, tz = manual_coords[location_lower]
-            print(f"DEBUG: Manual lookup SUCCESS for '{location_str}' -> {lat}, {lon}, {tz}")
+            logger.debug(f"Manual lookup SUCCESS for '{location_str}' -> {lat}, {lon}, {tz}")
             return (lat, lon, tz)
-        
+
         # Partial matching for variations
         for key, (lat, lon, tz) in manual_coords.items():
             # Check if location contains key words
             key_words = key.replace(',', '').split()
             location_words = location_lower.replace(',', '').split()
-            
+
             # If all key words are found in location
             if all(word in location_words for word in key_words[:2]):  # Match first 2 words (city, state/country)
-                print(f"DEBUG: Manual partial match SUCCESS for '{location_str}' -> '{key}' -> {lat}, {lon}, {tz}")
+                logger.debug(f"Manual partial match SUCCESS for '{location_str}' -> '{key}' -> {lat}, {lon}, {tz}")
                 return (lat, lon, tz)
-        
-        print(f"DEBUG: Manual lookup FAILED for '{location_str}' - no match found")
+
+        logger.debug(f"Manual lookup FAILED for '{location_str}' - no match found")
         return None
 
     def cache_key_natal(self, name: str, y: int, m: int, d: int, hh: int, mm: int,
@@ -515,7 +518,7 @@ class Astrologer(commands.Cog):
     def convert_svg_to_png(self, svg_path: str, png_path: str) -> bool:
         """Convert SVG file to PNG format for Discord image display."""
         try:
-            print(f"DEBUG: Converting SVG to PNG: {svg_path} -> {png_path}")
+            logger.debug(f"Converting SVG to PNG: {svg_path} -> {png_path}")
             
             # Read SVG content and add white background if needed
             with open(svg_path, 'r', encoding='utf-8') as f:
@@ -531,35 +534,35 @@ class Astrologer(commands.Cog):
             )
             
             if os.path.exists(png_path) and os.path.getsize(png_path) > 0:
-                print(f"DEBUG: PNG conversion successful: {png_path} ({os.path.getsize(png_path)} bytes)")
+                logger.debug(f"PNG conversion successful: {png_path} ({os.path.getsize(png_path)} bytes)")
                 return True
             else:
-                print(f"DEBUG: PNG file not created or empty: {png_path}")
+                logger.debug(f"PNG file not created or empty: {png_path}")
                 return False
-                
+
         except Exception as e:
-            print(f"DEBUG: Error converting SVG to PNG: {e}")
+            logger.error(f"Error converting SVG to PNG: {e}")
             import traceback
-            print(f"DEBUG: Conversion traceback:\n{traceback.format_exc()}")
+            logger.error(f"Conversion traceback:\n{traceback.format_exc()}")
             return False
 
     def generate_chart_svg(self, birth_data: Dict[str, Any], user_name: str) -> Optional[str]:
         """Generate SVG natal chart using Kerykeion with our precise coordinates."""
         try:
             birthday = birth_data['datetime']
-            print(f"DEBUG: Generating SVG chart for {user_name} at {birth_data['lat']}, {birth_data['lon']}")
-            print(f"DEBUG: Birth data keys available: {list(birth_data.keys())}")
-            
+            logger.debug(f"Generating SVG chart for {user_name} at {birth_data['lat']}, {birth_data['lon']}")
+            logger.debug(f"Birth data keys available: {list(birth_data.keys())}")
+
             # Validate required data
             required_keys = ['lat', 'lon', 'tz_str', 'datetime']
             missing_keys = [key for key in required_keys if key not in birth_data]
             if missing_keys:
-                print(f"DEBUG: Missing required keys for SVG generation: {missing_keys}")
+                logger.error(f"Missing required keys for SVG generation: {missing_keys}")
                 return None
-            
+
             # Create AstrologicalSubject with our precise geocoded coordinates
             # This bypasses Kerykeion's geocoding completely
-            print(f"DEBUG: Creating AstrologicalSubject with coordinates: lat={birth_data['lat']}, lon={birth_data['lon']}")
+            logger.debug(f"Creating AstrologicalSubject with coordinates: lat={birth_data['lat']}, lon={birth_data['lon']}")
             subject = AstrologicalSubject(
                 name=user_name,
                 year=birthday.year,
@@ -572,42 +575,42 @@ class Astrologer(commands.Cog):
                 tz_str=birth_data['tz_str'],
                 online=False  # Use offline mode since we have coordinates
             )
-            
-            print(f"DEBUG: Successfully created AstrologicalSubject for SVG generation")
-            print(f"DEBUG: Subject coordinates: lat={subject.lat}, lng={subject.lng}")
-            
+
+            logger.debug(f"Successfully created AstrologicalSubject for SVG generation")
+            logger.debug(f"Subject coordinates: lat={subject.lat}, lng={subject.lng}")
+
             # Generate the SVG chart
-            print(f"DEBUG: Initializing KerykeionChartSVG...")
+            logger.debug(f"Initializing KerykeionChartSVG...")
             chart_generator = KerykeionChartSVG(subject)
-            print(f"DEBUG: Calling makeSVG()...")
+            logger.debug(f"Calling makeSVG()...")
             chart_generator.makeSVG()  # This doesn't return the path, just creates the file
-            
+
             # Kerykeion saves files as "{name} - Natal Chart.svg" in the home directory
             expected_svg_path = os.path.expanduser(f"~/{user_name} - Natal Chart.svg")
-            print(f"DEBUG: Expected SVG path: {expected_svg_path}")
-            
+            logger.debug(f"Expected SVG path: {expected_svg_path}")
+
             # Validate SVG file was created
             if os.path.exists(expected_svg_path):
-                print(f"DEBUG: SVG chart successfully generated at: {expected_svg_path}")
+                logger.debug(f"SVG chart successfully generated at: {expected_svg_path}")
                 return expected_svg_path
             else:
-                print(f"DEBUG: SVG file not found at expected location: {expected_svg_path}")
+                logger.debug(f"SVG file not found at expected location: {expected_svg_path}")
                 # Check if it was created in current directory as fallback
                 fallback_path = f"{user_name} - Natal Chart.svg"
                 if os.path.exists(fallback_path):
-                    print(f"DEBUG: Found SVG at fallback location: {fallback_path}")
+                    logger.debug(f"Found SVG at fallback location: {fallback_path}")
                     return fallback_path
                 return None
-            
+
         except KeyError as e:
-            print(f"DEBUG: Missing required key in birth_data: {e}")
-            print(f"DEBUG: Available birth_data keys: {list(birth_data.keys()) if birth_data else 'None'}")
+            logger.error(f"Missing required key in birth_data: {e}")
+            logger.error(f"Available birth_data keys: {list(birth_data.keys()) if birth_data else 'None'}")
             return None
         except Exception as e:
-            print(f"DEBUG: Error generating SVG chart: {e}")
-            print(f"DEBUG: Exception type: {type(e).__name__}")
+            logger.error(f"Error generating SVG chart: {e}")
+            logger.error(f"Exception type: {type(e).__name__}")
             import traceback
-            print(f"DEBUG: Full traceback:\n{traceback.format_exc()}")
+            logger.error(f"Full traceback:\n{traceback.format_exc()}")
             return None
             raise e
 
@@ -921,7 +924,7 @@ class Astrologer(commands.Cog):
             coord_result = parse_coordinates(location)
             if coord_result:
                 lat, lng, timezone = coord_result
-                print(f"DEBUG: Using direct coordinates: lat={lat}, lon={lng}, tz={timezone}")
+                logger.debug(f"Using direct coordinates: lat={lat}, lon={lng}, tz={timezone}")
                 
                 # Validate timezone
                 try:
@@ -951,7 +954,7 @@ class Astrologer(commands.Cog):
             
             # If not coordinates, proceed with location geocoding
             try:
-                print(f"DEBUG: Original location input: '{location}'")
+                logger.debug(f"Original location input: '{location}'")
                 
                 # Try different location formats for better compatibility
                 locations_to_try = [location]
@@ -971,8 +974,8 @@ class Astrologer(commands.Cog):
                             f"{city}, {country}",  # City, Country
                             city,  # Just city name (last resort)
                         ])
-                
-                print(f"DEBUG: Location variations to try: {locations_to_try}")
+
+                logger.debug(f"Location variations to try: {locations_to_try}")
                 
                 temp_subj = None
                 last_error = None
@@ -988,49 +991,49 @@ class Astrologer(commands.Cog):
                 
                 # If API geocoding failed, try manual lookup
                 if api_result is None:
-                    print("DEBUG: Geonames API geocoding failed, trying manual lookup...")
+                    logger.debug("Geonames API geocoding failed, trying manual lookup...")
                     manual_result = self._manual_location_lookup(location)
-                    
+
                     if manual_result:
                         lat, lon, tz_str = manual_result
-                        print(f"DEBUG: Manual lookup provided: lat={lat}, lon={lon}, tz={tz_str}")
+                        logger.debug(f"Manual lookup provided: lat={lat}, lon={lon}, tz={tz_str}")
                         successful_location = f"{location} (manual lookup)"
                     else:
                         raise Exception("All location formats failed (both Geonames API and manual)")
                 else:
                     # Extract the coordinates and timezone from our API result
                     lat, lon, tz_str = api_result
-                    print(f"DEBUG: Geonames API provided: lat={lat}, lon={lon}, tz={tz_str}")
-                
-                print(f"DEBUG: Final extracted data:")
-                print(f"  - Original location: '{location}'")
-                print(f"  - Successful geocoding: '{successful_location}'")
-                print(f"  - Coordinates: {lat}, {lon}")
-                print(f"  - Timezone: {tz_str}")
-                
+                    logger.debug(f"Geonames API provided: lat={lat}, lon={lon}, tz={tz_str}")
+
+                logger.debug(f"Final extracted data:")
+                logger.debug(f"  - Original location: '{location}'")
+                logger.debug(f"  - Successful geocoding: '{successful_location}'")
+                logger.debug(f"  - Coordinates: {lat}, {lon}")
+                logger.debug(f"  - Timezone: {tz_str}")
+
                 # Validate coordinate-timezone consistency with original location context
                 coord_tz_valid = self._validate_coordinates_timezone(lat, lon, tz_str, location)
-                print(f"DEBUG: Coordinate-timezone validation: {'PASS' if coord_tz_valid else 'FAIL'}")
+                logger.debug(f"Coordinate-timezone validation: {'PASS' if coord_tz_valid else 'FAIL'}")
                 
                 if not coord_tz_valid:
-                    print(f"WARNING: Geographic mismatch detected - trying manual fallback!")
-                    print(f"  - Kerykeion returned: Coordinates ({lat}, {lon}), timezone {tz_str}")
-                    
+                    logger.warning(f"Geographic mismatch detected - trying manual fallback!")
+                    logger.warning(f"  - Kerykeion returned: Coordinates ({lat}, {lon}), timezone {tz_str}")
+
                     # Try manual lookup as fallback
                     manual_result = self._manual_location_lookup(location)
                     if manual_result:
                         lat, lon, tz_str = manual_result
-                        print(f"DEBUG: Manual fallback SUCCESS: lat={lat}, lon={lon}, tz={tz_str}")
+                        logger.debug(f"Manual fallback SUCCESS: lat={lat}, lon={lon}, tz={tz_str}")
                         successful_location = f"{location} (manual fallback)"
-                        
+
                         # Re-validate with manual coordinates
                         coord_tz_valid = self._validate_coordinates_timezone(lat, lon, tz_str, location)
-                        print(f"DEBUG: Manual fallback validation: {'PASS' if coord_tz_valid else 'FAIL'}")
-                        
+                        logger.debug(f"Manual fallback validation: {'PASS' if coord_tz_valid else 'FAIL'}")
+
                         if not coord_tz_valid:
-                            print(f"ERROR: Even manual fallback coordinates failed validation!")
+                            logger.error(f"Even manual fallback coordinates failed validation!")
                     else:
-                        print(f"ERROR: Manual fallback also failed for location: {location}")
+                        logger.error(f"Manual fallback also failed for location: {location}")
                         
                         # Still store Kerykeion data but warn the user
                         self.user_birth_data[user_id] = {
@@ -1334,7 +1337,7 @@ class Astrologer(commands.Cog):
             if user_id in self._last_chart_execution:
                 time_diff = current_time - self._last_chart_execution[user_id]
                 if time_diff < 5:  # 5 second cooldown
-                    print(f"DEBUG: Preventing duplicate chart execution for user {user_id} (last run {time_diff:.1f}s ago)")
+                    logger.info(f"Preventing duplicate chart execution for user {user_id} (last run {time_diff:.1f}s ago)")
                     return
         else:
             self._last_chart_execution = {}
@@ -1381,8 +1384,8 @@ class Astrologer(commands.Cog):
             # Copy SVG to sanitized path for Discord sending
             import shutil
             shutil.copy2(svg_path, temp_svg_path)
-            print(f"DEBUG: Copied SVG to temporary path: {temp_svg_path}")
-            
+            logger.debug(f"Copied SVG to temporary path: {temp_svg_path}")
+
             # Send SVG file as Discord attachment
             with open(temp_svg_path, 'rb') as f:
                 svg_file = discord.File(f, filename=f"natal_chart_{sanitized_name}_{user_id}.svg")
@@ -1394,16 +1397,16 @@ class Astrologer(commands.Cog):
                     f"📎 Format: SVG (scalable vector chart)",
                     file=svg_file
                 )
-            print(f"DEBUG: Successfully sent SVG chart file")
-            
+            logger.debug(f"Successfully sent SVG chart file")
+
             # Clean up temporary files
             for file_path in [svg_path, temp_svg_path]:
                 try:
                     if os.path.exists(file_path):
                         os.remove(file_path)
-                        print(f"DEBUG: Cleaned up temporary file: {file_path}")
+                        logger.debug(f"Cleaned up temporary file: {file_path}")
                 except Exception as cleanup_error:
-                    print(f"DEBUG: Could not clean up file {file_path}: {cleanup_error}")
+                    logger.warning(f"Could not clean up file {file_path}: {cleanup_error}")
             
             # Delete the loading message
             try:
@@ -1412,7 +1415,7 @@ class Astrologer(commands.Cog):
                 pass  # Ignore if already deleted
                 
         except Exception as e:
-            print(f"DEBUG: Error in visual_chart command: {e}")
+            logger.error(f"Error in visual_chart command: {e}")
             await ctx.send(f"```\nError generating visual chart: {e}\n"
                           f"Please check your birth information and try again.\n```")
             
