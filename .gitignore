@@ -1,5 +1,8 @@
 .idea/*
 
+# Asha Memory Bank (local-only)
+Memory/communicationStyle.md
+
 *.un~
 
 training_text.txt

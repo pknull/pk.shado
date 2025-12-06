@@ -2,6 +2,8 @@
 
 A Discord bot providing a bit of gaming RNG and some fun commands.
 
+> This project is partially managed by [Asha](https://github.com/pknull/asha), a Claude Code framework.
+
 ## Setup
 
 1. Install Python 3.8 or newer.
