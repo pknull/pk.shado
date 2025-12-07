@@ -12,42 +12,58 @@ dependencies: [projectbrief.md, techEnvironment.md]
 
 ## Current Status
 
-**Phase**: Asha Framework Onboarding
+**Phase**: Active Development
 **Date**: 2025-12-06
-**Focus**: Setting up Memory Bank structure for Discord bot project
+**Focus**: Repository hygiene and security posture
 
 ## Recent Changes
 
-- Added asha submodule to project
-- Created CLAUDE.md referencing @asha/CORE.md
-- Initialized Memory directory structure
-- Created projectbrief.md documenting bot architecture and features
-- Creating activeContext.md (this file)
+- Repository cleanup commit (6cdcf4f):
+  - Added tests/ directory with Kerykeion deterministic tests
+  - Added AGENTS.md, GEMINI.md for multi-AI workflow transparency
+  - Removed deprecated Astrologer.py.backup and Astrologer_old.py (pickle security)
+  - Updated .gitignore: cache/, *.code-workspace
+  - Net: +188/-2858 lines (removed dead code)
+
+- Asha framework onboarding complete:
+  - Memory Bank established (projectbrief, techEnvironment, activeContext)
+  - communicationStyle.md symlinked from AAS project
+  - Framework integration validated
 
 ## Next Steps
 
-1. Create techEnvironment.md with bot-specific tooling and paths
-2. Symlink communicationStyle.md from /home/pknull/Obsidian/AAS/Memory/
-3. Test Asha framework integration by opening project in Claude
+1. **Security fixes** (identified by panel audit):
+   - app.py:61-63 - Remove hardcoded debug_token fallback
+   - Astrologer.py:800 - Replace /tmp/ paths with tempfile module
+   - CipherOracle.py:20, Weather.py:16 - Silent API key absence handling
+
+2. **Optional improvements**:
+   - Unify HTTP clients (requests → aiohttp in astrologer_geocoding.py)
+   - Add rate limiting to expensive commands
+   - Set restrictive file permissions on JSON data files
 
 ## Current Branch
 
-`claude/code-optimization-review-011CUoLFDCwdDSpontgtvv3m`
+`master` (1 commit ahead of origin)
 
 ## Active Work Areas
 
-- Asha framework integration
-- Memory Bank establishment
-- Project documentation alignment
+- Security hardening
+- Code quality improvements
 
 ## Known Issues
 
-None currently identified.
+| Priority | Issue | Location |
+|----------|-------|----------|
+| HIGH | Hardcoded debug_token | app.py:61-63 |
+| HIGH | Predictable /tmp/ paths | Astrologer.py:800 |
+| MEDIUM | API key presence logging | CipherOracle.py:20, Weather.py:16 |
 
 ## Open Questions
 
-None currently.
+- Push current commit to origin/master?
+- Prioritize security fixes now or defer to separate PR?
 
 ## Session Notes
 
-Initial Asha onboarding session - establishing Memory Bank foundation for Discord bot project following journal project pattern.
+Panel analysis conducted for commit strategy. Removed 2858 lines of deprecated code including pickle-based serialization. Security audit identified issues in committed codebase requiring follow-up.

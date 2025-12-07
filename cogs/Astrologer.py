@@ -11,6 +11,7 @@ import asyncio
 import logging
 import time
 import shutil
+import tempfile
 import discord
 from datetime import datetime
 from typing import Dict, Any, Optional
@@ -795,31 +796,37 @@ class Astrologer(commands.Cog):
                 await loading_msg.edit(content="❌ Chart generation failed. Please try again.")
                 return
 
-            # Prepare file for Discord
+            # Prepare file for Discord using secure temp file
             sanitized_name = self.computer.sanitize_filename(ctx.author.display_name)
-            temp_svg_path = f"/tmp/natal_chart_{sanitized_name}_{user_id}.svg"
-            shutil.copy2(svg_path, temp_svg_path)
+            discord_filename = f"natal_chart_{sanitized_name}_{user_id}.svg"
 
-            # Send SVG file
-            with open(temp_svg_path, 'rb') as f:
-                svg_file = discord.File(f, filename=f"natal_chart_{sanitized_name}_{user_id}.svg")
-                await ctx.send(
-                    f"🌟 **Visual Natal Chart for {ctx.author.display_name}** 🌟\n"
-                    f"📅 Born: {birthday.strftime('%B %d, %Y at %I:%M %p')}\n"
-                    f"📍 Location: {birth_data['location']} ({birth_data['lat']:.4f}, {birth_data['lon']:.4f})\n"
-                    f"⚙️ System: Tropical • Placidus Houses • True Node\n"
-                    f"📎 Format: SVG (scalable vector chart)",
-                    file=svg_file
-                )
-            logger.debug(f"Successfully sent SVG chart file")
+            # Use tempfile for secure temporary storage
+            with tempfile.NamedTemporaryFile(mode='wb', suffix='.svg', delete=False) as tmp:
+                temp_svg_path = tmp.name
+                with open(svg_path, 'rb') as src:
+                    shutil.copyfileobj(src, tmp)
 
-            # Clean up
-            for file_path in [svg_path, temp_svg_path]:
-                try:
-                    if os.path.exists(file_path):
-                        os.remove(file_path)
-                except Exception as e:
-                    logger.warning(f"Could not clean up file {file_path}: {e}")
+            try:
+                # Send SVG file
+                with open(temp_svg_path, 'rb') as f:
+                    svg_file = discord.File(f, filename=discord_filename)
+                    await ctx.send(
+                        f"🌟 **Visual Natal Chart for {ctx.author.display_name}** 🌟\n"
+                        f"📅 Born: {birthday.strftime('%B %d, %Y at %I:%M %p')}\n"
+                        f"📍 Location: {birth_data['location']} ({birth_data['lat']:.4f}, {birth_data['lon']:.4f})\n"
+                        f"⚙️ System: Tropical • Placidus Houses • True Node\n"
+                        f"📎 Format: SVG (scalable vector chart)",
+                        file=svg_file
+                    )
+                logger.debug(f"Successfully sent SVG chart file")
+            finally:
+                # Clean up temp files
+                for file_path in [svg_path, temp_svg_path]:
+                    try:
+                        if os.path.exists(file_path):
+                            os.remove(file_path)
+                    except OSError as e:
+                        logger.warning(f"Could not clean up file {file_path}: {e}")
 
             await loading_msg.delete()
 

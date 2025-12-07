@@ -53,14 +53,12 @@ bot = commands.Bot(
 )
 
 # configure discord
-try:
-    DISCORD_BOT_TOKEN = os.environ['DISCORD_BOT_TOKEN']
-    debug_logger.info("Found DISCORD_BOT_TOKEN in environment variables")
-except KeyError:
+DISCORD_BOT_TOKEN = os.environ.get('DISCORD_BOT_TOKEN')
+if not DISCORD_BOT_TOKEN:
     debug_logger.error("DISCORD_BOT_TOKEN not found in environment variables")
-    # For debugging purposes, set a dummy token
-    DISCORD_BOT_TOKEN = "debug_token"
-    debug_logger.warning("Using dummy token for debugging purposes")
+    debug_logger.error("Set DISCORD_BOT_TOKEN in .env file or environment")
+    sys.exit(1)
+debug_logger.info("DISCORD_BOT_TOKEN configured")
 
 
 async def load_extensions():
