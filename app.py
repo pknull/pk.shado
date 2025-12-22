@@ -29,6 +29,7 @@ root.setLevel(logging.WARN)
 LANGUAGE = "english"
 SENTENCES_COUNT = 2
 cogs = [
+    "AAS",
     "Anime",
     "Astrologer",
     "Games",
