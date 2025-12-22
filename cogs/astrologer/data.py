@@ -7,8 +7,8 @@ import json
 import os
 from typing import Dict, Tuple, List
 
-# Get the path to the data directory
-DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data')
+# Config files are in the same directory as this module
+DATA_DIR = os.path.dirname(__file__)
 
 def load_timezone_regions() -> Dict[str, Dict[str, List[float]]]:
     """Load timezone region validation data from JSON."""
