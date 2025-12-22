@@ -274,6 +274,72 @@ class TestSuccessLevelCalculation:
         assert get_success_level(2, 5) == SuccessLevel.HARD
 
 
+class TestCaseInsensitiveSkills:
+    """Tests for case-insensitive skill handling."""
+
+    def test_normalize_preserves_standard_skill_case(self):
+        """normalize_skill_name should return canonical form for standard skills."""
+        assert normalize_skill_name("first aid") == "First Aid"
+        assert normalize_skill_name("FIRST AID") == "First Aid"
+        assert normalize_skill_name("First Aid") == "First Aid"
+        assert normalize_skill_name("library use") == "Library Use"
+        assert normalize_skill_name("LIBRARY USE") == "Library Use"
+
+    def test_normalize_preserves_custom_skill_case(self):
+        """normalize_skill_name should preserve custom skill case."""
+        assert normalize_skill_name("Wizardry") == "Wizardry"
+        assert normalize_skill_name("My Custom Skill") == "My Custom Skill"
+
+    def test_find_skill_case_insensitive(self):
+        """find_skill_in_dict should find skills regardless of case."""
+        from cogs.aas.data import find_skill_in_dict
+
+        skills = {
+            "First Aid": {"value": 50},
+            "Library Use": {"value": 75},
+            "Wizardry": {"value": 35},
+        }
+
+        # Exact match
+        key, data = find_skill_in_dict("First Aid", skills)
+        assert key == "First Aid"
+        assert data["value"] == 50
+
+        # Lowercase
+        key, data = find_skill_in_dict("first aid", skills)
+        assert key == "First Aid"
+        assert data["value"] == 50
+
+        # Uppercase
+        key, data = find_skill_in_dict("LIBRARY USE", skills)
+        assert key == "Library Use"
+        assert data["value"] == 75
+
+        # Custom skill case-insensitive
+        key, data = find_skill_in_dict("wizardry", skills)
+        assert key == "Wizardry"
+        assert data["value"] == 35
+
+    def test_find_skill_not_found(self):
+        """find_skill_in_dict should return None for missing skills."""
+        from cogs.aas.data import find_skill_in_dict
+
+        skills = {"First Aid": {"value": 50}}
+        key, data = find_skill_in_dict("Occult", skills)
+        assert key is None
+        assert data is None
+
+    def test_find_skill_via_alias(self):
+        """find_skill_in_dict should resolve aliases."""
+        from cogs.aas.data import find_skill_in_dict
+
+        skills = {"Spot Hidden": {"value": 60}}
+        # "spot" is an alias for "Spot Hidden"
+        key, data = find_skill_in_dict("spot", skills)
+        assert key == "Spot Hidden"
+        assert data["value"] == 60
+
+
 class TestSuccessDisplay:
     """Tests for success level display strings."""
 

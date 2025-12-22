@@ -150,8 +150,56 @@ def is_standard_skill(skill_name: str) -> bool:
 
 
 def normalize_skill_name(skill_name: str) -> str:
-    """Normalize skill name using aliases."""
-    return SKILL_ALIASES.get(skill_name.lower(), skill_name)
+    """
+    Normalize skill name using aliases and case matching.
+
+    First checks aliases, then tries to match a standard skill
+    case-insensitively. Returns the canonical form if found,
+    otherwise returns the original (for custom skills).
+    """
+    lower = skill_name.lower()
+
+    # Check aliases first
+    if lower in SKILL_ALIASES:
+        return SKILL_ALIASES[lower]
+
+    # Try case-insensitive match against standard skills
+    for std_skill in STANDARD_SKILLS:
+        if std_skill.lower() == lower:
+            return std_skill  # Return canonical form
+
+    # No match - return original for custom skills
+    return skill_name
+
+
+def find_skill_in_dict(skill_name: str, skills: dict) -> tuple:
+    """
+    Find a skill in a character's skills dict, case-insensitively.
+
+    Args:
+        skill_name: The skill name to find (any case)
+        skills: Character's skills dictionary
+
+    Returns:
+        Tuple of (canonical_key, skill_data) or (None, None) if not found
+    """
+    lower = skill_name.lower()
+
+    # First try exact match
+    if skill_name in skills:
+        return skill_name, skills[skill_name]
+
+    # Try alias resolution
+    aliased = SKILL_ALIASES.get(lower)
+    if aliased and aliased in skills:
+        return aliased, skills[aliased]
+
+    # Case-insensitive search
+    for key in skills:
+        if key.lower() == lower:
+            return key, skills[key]
+
+    return None, None
 
 
 # Derived value formulas

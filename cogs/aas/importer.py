@@ -100,7 +100,10 @@ def parse_dholes_house_json(json_data: str) -> Tuple[Dict[str, Any], int]:
             continue
 
         # Handle subskills (e.g., Science (Chemistry))
-        if subskill and subskill != "None":
+        # Special case: "Misc" is Dhole's House container for custom skills
+        if skill_name == "Misc" and subskill and subskill != "None":
+            full_name = subskill  # Use custom skill name directly
+        elif subskill and subskill != "None":
             full_name = f"{skill_name} ({subskill})"
         else:
             full_name = skill_name

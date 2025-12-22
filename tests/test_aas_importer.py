@@ -318,6 +318,32 @@ class TestParseEdgeCases:
         character, _ = parse_dholes_house_json(json_data)
         assert "Accounting" in character["skills"]
 
+    def test_misc_custom_skills_use_subskill_name(self):
+        """Misc skills should use subskill as the skill name (custom skills)."""
+        json_data = json.dumps({
+            "Investigator": {
+                "PersonalDetails": {"Name": "Test"},
+                "Characteristics": {},
+                "Skills": {
+                    "Skill": [
+                        {"name": "Misc", "subskill": "Wizardry", "value": "35"},
+                        {"name": "Misc", "subskill": "Alchemy", "value": "40"}
+                    ]
+                }
+            }
+        })
+        character, count = parse_dholes_house_json(json_data)
+        skills = character["skills"]
+
+        # Should use subskill name directly, not "Misc (Wizardry)"
+        assert "Wizardry" in skills
+        assert "Alchemy" in skills
+        assert "Misc (Wizardry)" not in skills
+        assert "Misc (Alchemy)" not in skills
+        assert skills["Wizardry"]["value"] == 35
+        assert skills["Wizardry"]["custom"] is True
+        assert count == 2
+
     def test_calculates_hp_if_missing(self):
         """HP max should be calculated if not in file."""
         json_data = json.dumps({

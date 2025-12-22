@@ -30,6 +30,7 @@ from .data import (
     get_skill_base,
     is_standard_skill,
     normalize_skill_name,
+    find_skill_in_dict,
     calc_hp_max,
     calc_mp_max,
     calc_sanity_max,
@@ -453,7 +454,14 @@ class AAS(commands.Cog):
         is_custom = not is_standard_skill(normalized)
 
         skills = character.get("skills", {})
-        old_data = skills.get(normalized, {})
+
+        # Case-insensitive lookup for existing skill data
+        found_key, old_data = find_skill_in_dict(skill_name, skills)
+        if found_key:
+            normalized = found_key  # Use existing key
+            old_data = old_data or {}
+        else:
+            old_data = {}
         old_val = old_data.get("value", 0)
 
         skills[normalized] = {
@@ -803,10 +811,13 @@ Examples:
 
         normalized = normalize_skill_name(skill_name)
         skills = character.get("skills", {})
-        skill_data = skills.get(normalized, {})
+
+        # Case-insensitive skill lookup
+        found_key, skill_data = find_skill_in_dict(skill_name, skills)
 
         # Get skill value
-        if normalized in skills:
+        if found_key:
+            normalized = found_key  # Use the actual key from the dict
             skill_value = skill_data.get("value", 0)
             is_base = False
             is_custom = skill_data.get("custom", False)
@@ -1065,12 +1076,16 @@ Examples:
         normalized = normalize_skill_name(skill_name)
         skills = character.get("skills", {})
 
-        if normalized not in skills:
+        # Case-insensitive lookup
+        found_key, skill_data = find_skill_in_dict(skill_name, skills)
+
+        if not found_key:
             # Add the skill if it doesn't exist
             is_custom = not is_standard_skill(normalized)
             base_val = get_skill_base(normalized, character.get("characteristics", {})) if not is_custom else 0
             skills[normalized] = {"value": base_val, "checked": True, "eligible": False, "custom": is_custom}
         else:
+            normalized = found_key  # Use existing key
             skills[normalized]["checked"] = True
 
         character["skills"] = skills
@@ -1153,11 +1168,13 @@ Examples:
         resources = character.get("resources", {})
         xp = resources.get("xp", 0)
 
-        if normalized not in skills:
+        # Case-insensitive lookup
+        found_key, skill_data = find_skill_in_dict(skill_name, skills)
+        if not found_key:
             await ctx.send(f"Skill not found: {normalized}")
             return
 
-        skill_data = skills[normalized]
+        normalized = found_key  # Use existing key
         if not skill_data.get("eligible"):
             await ctx.send(f"**{normalized}** did not pass advancement roll.")
             return
