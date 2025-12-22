@@ -9,7 +9,7 @@ import requests
 from typing import Optional, Tuple
 from timezonefinder import TimezoneFinder
 
-from .astrologer_data import load_timezone_regions, load_manual_coordinates
+from .data import load_timezone_regions, load_manual_coordinates
 
 logger = logging.getLogger('astrologer.geocoding')
 

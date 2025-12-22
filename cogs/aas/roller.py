@@ -11,7 +11,7 @@ from dataclasses import dataclass
 from typing import Optional, Tuple
 from dice_roller.DiceThrower import DiceThrower
 
-from .aas_data import (
+from .data import (
     SuccessLevel,
     get_success_level,
     SUCCESS_DISPLAY,

@@ -11,7 +11,7 @@ import os
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from cogs.aas_importer import (
+from cogs.aas.importer import (
     parse_dholes_house_json,
     export_to_dholes_house,
     ImportError,

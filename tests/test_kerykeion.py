@@ -9,7 +9,7 @@ from datetime import datetime
 
 # Add the parent directory to sys.path to import from cogs
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from cogs.Astrologer import Astrologer
+from cogs.astrologer import Astrologer
 
 # Phoenix fixture data
 PHOENIX_FIXTURE = {
@@ -35,7 +35,7 @@ def astrologer():
 @pytest.fixture
 def phoenix_natal(astrologer):
     """Phoenix natal chart fixture."""
-    return astrologer.compute_natal(**PHOENIX_FIXTURE)
+    return astrologer.computer.compute_natal(**PHOENIX_FIXTURE)
 
 def test_signs_core(phoenix_natal):
     """Test that core planetary signs match expected values for Phoenix fixture."""
@@ -51,31 +51,31 @@ def test_signs_core(phoenix_natal):
 
 def test_geometry_and_neighborhood(astrologer, phoenix_natal):
     """Test mathematical constraints and angular relationships."""
-    
+
     # Test solar neighborhood (Mercury and Venus limits)
     six = phoenix_natal['natal']['six']
     sun_lon = six['sun']['lon']
     mercury_lon = six['mercury']['lon']
     venus_lon = six['venus']['lon']
-    
-    mercury_dist = astrologer.angdiff(sun_lon, mercury_lon)
-    venus_dist = astrologer.angdiff(sun_lon, venus_lon)
+
+    mercury_dist = astrologer.computer.angdiff(sun_lon, mercury_lon)
+    venus_dist = astrologer.computer.angdiff(sun_lon, venus_lon)
     
     assert mercury_dist <= 28.5, f"Mercury {mercury_dist:.2f}° from Sun, max 28.5°"
     assert venus_dist <= 47.5, f"Venus {venus_dist:.2f}° from Sun, max 47.5°"
 
 def test_oppositions(astrologer, phoenix_natal):
     """Test that ASC/DSC and MC/IC are properly opposed."""
-    six = phoenix_natal['natal']['six'] 
+    six = phoenix_natal['natal']['six']
     houses = phoenix_natal['natal']['houses']
-    
+
     asc_lon = six['asc']['lon']
     mc_lon = six['mc']['lon']
     dsc_lon = houses['7']['lon']
     ic_lon = houses['4']['lon']
-    
-    asc_dsc_diff = abs(astrologer.angdiff(asc_lon, dsc_lon) - 180.0)
-    mc_ic_diff = abs(astrologer.angdiff(mc_lon, ic_lon) - 180.0)
+
+    asc_dsc_diff = abs(astrologer.computer.angdiff(asc_lon, dsc_lon) - 180.0)
+    mc_ic_diff = abs(astrologer.computer.angdiff(mc_lon, ic_lon) - 180.0)
     
     assert asc_dsc_diff <= 0.5, f"ASC/DSC opposition off by {asc_dsc_diff:.3f}°"
     assert mc_ic_diff <= 0.5, f"MC/IC opposition off by {mc_ic_diff:.3f}°"
@@ -98,16 +98,16 @@ def test_house_monotonic(phoenix_natal):
 def test_validation_catches_errors(astrologer):
     """Test that validation catches impossible charts."""
     # This should pass validation
-    valid_chart = astrologer.compute_natal(**PHOENIX_FIXTURE)
-    astrologer.validate_natal_chart(valid_chart)  # Should not raise
+    valid_chart = astrologer.computer.compute_natal(**PHOENIX_FIXTURE)
+    astrologer.computer.validate_natal_chart(valid_chart)  # Should not raise
     
     # Test would catch manually constructed invalid chart
     # (In real scenario, Kerykeion shouldn't produce invalid data)
 
 def test_deterministic_reproducibility(astrologer):
     """Test that identical inputs produce identical outputs."""
-    chart1 = astrologer.compute_natal(**PHOENIX_FIXTURE)
-    chart2 = astrologer.compute_natal(**PHOENIX_FIXTURE)
+    chart1 = astrologer.computer.compute_natal(**PHOENIX_FIXTURE)
+    chart2 = astrologer.computer.compute_natal(**PHOENIX_FIXTURE)
     
     # Compare key positions (within floating point precision)
     six1 = chart1['natal']['six']
@@ -121,9 +121,9 @@ def test_deterministic_reproducibility(astrologer):
 
 def test_transits_computation(astrologer):
     """Test transit computation with deterministic coordinates."""
-    transits = astrologer.compute_transits_now(
-        lat=PHOENIX_FIXTURE['lat'], 
-        lon=PHOENIX_FIXTURE['lon'], 
+    transits = astrologer.computer.compute_transits_now(
+        lat=PHOENIX_FIXTURE['lat'],
+        lon=PHOENIX_FIXTURE['lon'],
         tz_str=PHOENIX_FIXTURE['tz_str']
     )
     

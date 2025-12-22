@@ -11,7 +11,7 @@ from unittest.mock import patch, MagicMock
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from cogs.aas_roller import (
+from cogs.aas.roller import (
     parse_modifier,
     roll_d100,
     skill_check,
@@ -20,7 +20,7 @@ from cogs.aas_roller import (
     format_roll_result,
     RollResult,
 )
-from cogs.aas_data import SuccessLevel
+from cogs.aas.data import SuccessLevel
 
 
 class TestParseModifier:

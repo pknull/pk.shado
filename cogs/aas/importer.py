@@ -9,7 +9,7 @@ import logging
 from typing import Dict, Any, Optional, Tuple
 from datetime import datetime, timezone
 
-from .aas_data import STANDARD_SKILLS, is_standard_skill
+from .data import STANDARD_SKILLS, is_standard_skill
 
 logger = logging.getLogger('aas.importer')
 

@@ -15,7 +15,7 @@ from typing import Dict, Any, Optional
 from kerykeion import AstrologicalSubject, KerykeionChartSVG
 import cairosvg
 
-from .astrologer_data import SIGN_MAP, HOUSE_SYSTEM_MAP, ZODIAC_TYPE_MAP
+from .data import SIGN_MAP, HOUSE_SYSTEM_MAP, ZODIAC_TYPE_MAP
 
 logger = logging.getLogger('astrologer.core')
 

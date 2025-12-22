@@ -10,7 +10,7 @@ import os
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from cogs.aas_data import (
+from cogs.aas.data import (
     CHARACTERISTICS,
     RESOURCES,
     STANDARD_SKILLS,

@@ -22,8 +22,8 @@ from pathlib import Path
 from datetime import datetime, timezone
 from typing import Dict, Any, Optional, Tuple
 
-from .Utils import make_embed
-from .aas_data import (
+from ..Utils import make_embed
+from .data import (
     CHARACTERISTICS,
     RESOURCES,
     STANDARD_SKILLS,
@@ -36,14 +36,14 @@ from .aas_data import (
     calc_major_wound_threshold,
     SuccessLevel,
 )
-from .aas_roller import (
+from .roller import (
     skill_check,
     characteristic_check,
     roll_dice,
     parse_modifier,
     format_roll_result,
 )
-from .aas_importer import (
+from .importer import (
     parse_dholes_house_json,
     export_to_dholes_house,
     ImportError,

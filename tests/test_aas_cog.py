@@ -74,7 +74,7 @@ def temp_char_dir():
 @pytest.fixture
 def aas_cog(temp_char_dir):
     """Create AAS cog instance with temporary data directory."""
-    import cogs.AAS as aas_module
+    import cogs.aas.cog as aas_module
 
     # Patch the CHARACTER_DIR directly on the module
     original_dir = aas_module.CHARACTER_DIR

@@ -18,12 +18,12 @@ from typing import Dict, Any, Optional
 from discord.ext import commands
 from kerykeion import AstrologicalSubject
 
-# Import our new modules
-from .astrologer_data import (
+# Import our modules
+from .data import (
     ZODIAC_SIGNS, SIGN_MAP, ZODIAC_DATES, READING_TYPES, COMPONENT_INFO
 )
-from .astrologer_geocoding import GeocodingService
-from .astrologer_core import AstrologicalComputer
+from .geocoding import GeocodingService
+from .core import AstrologicalComputer
 
 logger = logging.getLogger('astrologer')
 
