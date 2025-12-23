@@ -1,6 +1,6 @@
 ---
-version: 1.0.0
-lastUpdated: 2025-12-22
+version: 1.1.0
+lastUpdated: 2025-12-23
 lifecycle: active
 stakeholder: pknull
 changeTrigger: session-completion
@@ -13,24 +13,31 @@ dependencies: [projectbrief.md, techEnvironment.md]
 ## Current Status
 
 **Phase**: Active Development
-**Date**: 2025-12-22
-**Focus**: AAS Character Management System (Phase 1 MVP complete)
+**Date**: 2025-12-23
+**Focus**: AAS Character Management System (Phase 1 complete, all issues resolved)
 
 ## Recent Changes
 
+- Cog Restructure & Bug Fixes (2025-12-23):
+  - Reorganized cogs into package subdirectories:
+    - `cogs/AAS.py` → `cogs/aas/cog.py` (with data.py, roller.py, importer.py)
+    - `cogs/Astrologer.py` → `cogs/astrologer/cog.py` (with core.py, geocoding.py, data.py)
+    - Added `__init__.py` files for proper package imports
+  - Fixed GitHub issues #13, #14, #15:
+    - #13: Custom skills from Dhole's House "Misc" container now import as just the skill name
+    - #14: Skill lookups now case-insensitive via `find_skill_in_dict()`
+    - #15: Dice rolls now use Discord embeds with color-coded results
+  - Data management improvements:
+    - Migrated astrologer birth data from pickle to JSON
+    - Moved static config files to cog packages
+    - Simplified `.gitignore` to ignore entire `data/` directory
+  - 159 tests passing (up from 143)
+
 - AAS Cog Implementation (2025-12-22):
-  - Created `cogs/aas_data.py`: Skill defaults, characteristics, success level calculation
-  - Created `cogs/aas_roller.py`: CoC d100 mechanics with bonus/penalty dice
-  - Created `cogs/aas_importer.py`: Dhole's House JSON parser and exporter
-  - Created `cogs/AAS.py`: Main cog with all commands (~500 lines)
-  - Added "AAS" to cogs list in `app.py`
-  - Created comprehensive test suite (143 tests passing):
-    - `tests/test_aas_data.py` (40 tests)
-    - `tests/test_aas_roller.py` (42 tests)
-    - `tests/test_aas_importer.py` (35 tests)
-    - `tests/test_aas_cog.py` (26 tests)
-  - Created `pytest.ini` for pytest-asyncio configuration
-  - Plan file: `/home/pknull/.claude/plans/shimmying-dancing-noodle.md`
+  - Created `cogs/aas/` package: data.py, roller.py, importer.py, cog.py
+  - CoC 7e percentile mechanics with bonus/penalty dice
+  - Dhole's House JSON import/export
+  - Comprehensive test suite across all modules
 
 - rpg-dice upgrade (2025-12-07):
   - dice_roller 0.1 → 0.2 (commit 5bbfc9d)
@@ -73,11 +80,20 @@ None.
 
 ## Session Notes
 
+Cog restructure and GitHub issue fixes (2025-12-23):
+- Reorganized cogs with supporting files into package subdirectories
+- Fixed all 3 open GitHub issues for AAS cog
+- Key learnings:
+  - Python packages need `__init__.py` with proper exports for cog loading
+  - Case-insensitive dict lookups need alias resolution first, then case folding
+  - Discord embeds provide better UX for dice roll results (color-coded by success level)
+- Verified git history clean of PII
+- 159 tests passing
+
 AAS Character Management implementation session (2025-12-22):
 - Implemented Phase 1 MVP for BURGE (CoC 7e variant) character management
 - Key discoveries:
   - rpg-dice DiceThrower returns `{'natural': [list], 'modified': [list], 'total': str}` format
   - Discord.py command callbacks require `.callback(cog, ctx, ...)` invocation for testing
   - Dhole's House JSON uses `Skills.Skill` nested array with string values
-- Created 143 tests covering all modules
-- Phase 2/3 features documented in plan but not yet implemented (pushed rolls, sanity loss rolls, bout of madness)
+- Phase 2/3 features documented in plan (pushed rolls, sanity loss, bout of madness)
