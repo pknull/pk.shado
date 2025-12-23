@@ -1,5 +1,5 @@
 ---
-version: 1.1.0
+version: 1.2.0
 lastUpdated: 2025-12-23
 lifecycle: active
 stakeholder: pknull
@@ -80,7 +80,13 @@ None.
 
 ## Session Notes
 
-Cog restructure and GitHub issue fixes (2025-12-23):
+Documentation update (2025-12-23, session 2):
+- Updated README.md with comprehensive command reference (50+ commands)
+- Updated ARCHITECTURE.md with new cog package structure
+- Updated CHANGELOG.md with v0.21.0, v0.22.0, v0.23.0 entries
+- Verified no open PRs or issues on GitHub
+
+Cog restructure and GitHub issue fixes (2025-12-23, session 1):
 - Reorganized cogs with supporting files into package subdirectories
 - Fixed all 3 open GitHub issues for AAS cog
 - Key learnings:
@@ -89,11 +95,3 @@ Cog restructure and GitHub issue fixes (2025-12-23):
   - Discord embeds provide better UX for dice roll results (color-coded by success level)
 - Verified git history clean of PII
 - 159 tests passing
-
-AAS Character Management implementation session (2025-12-22):
-- Implemented Phase 1 MVP for BURGE (CoC 7e variant) character management
-- Key discoveries:
-  - rpg-dice DiceThrower returns `{'natural': [list], 'modified': [list], 'total': str}` format
-  - Discord.py command callbacks require `.callback(cog, ctx, ...)` invocation for testing
-  - Dhole's House JSON uses `Skills.Skill` nested array with string values
-- Phase 2/3 features documented in plan (pushed rolls, sanity loss, bout of madness)
