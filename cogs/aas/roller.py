@@ -296,3 +296,86 @@ def format_roll_result(result: RollResult) -> str:
         lines.append(f"Penalty dice: {result.penalty_dice} (tens: {tens_str})")
 
     return "\n".join(lines)
+
+
+def format_roll_embed_data(
+    result: RollResult,
+    character_name: str = None,
+    roller_name: str = None,
+    notes: list = None,
+) -> dict:
+    """
+    Format a roll result as data for Discord embed.
+
+    Args:
+        result: The RollResult from a skill/char check
+        character_name: Name of the character rolling
+        roller_name: Discord display name of the roller
+        notes: Additional notes to append (e.g., "Major wound: +1 penalty die")
+
+    Returns:
+        Dict with embed fields: title, color, fields list
+    """
+    # Determine color based on success
+    if result.success_level == SuccessLevel.CRITICAL:
+        color = 0xFFD700  # Gold
+    elif result.success_level == SuccessLevel.EXTREME:
+        color = 0x00FF00  # Green
+    elif result.success_level == SuccessLevel.HARD:
+        color = 0x90EE90  # Light green
+    elif result.success_level == SuccessLevel.REGULAR:
+        color = 0x87CEEB  # Sky blue
+    elif result.success_level == SuccessLevel.FUMBLE:
+        color = 0x8B0000  # Dark red
+    else:
+        color = 0xFF6347  # Tomato (failure)
+
+    # Build title
+    skill_suffix = ""
+    if result.is_base:
+        skill_suffix = " (base)"
+    elif result.is_custom and result.target == 0:
+        skill_suffix = " (unset)"
+
+    title = f"🎲 {result.skill_name}{skill_suffix}"
+
+    # Build fields
+    fields = []
+
+    # Target info
+    if result.difficulty != "regular":
+        target_text = f"{result.difficulty.title()}: {result.effective_target} (from {result.target})"
+    else:
+        target_text = str(result.effective_target)
+    fields.append({"name": "Target", "value": target_text, "inline": True})
+
+    # Roll result
+    fields.append({"name": "Roll", "value": str(result.roll), "inline": True})
+
+    # Result
+    fields.append({"name": "Result", "value": result.success_text, "inline": True})
+
+    # Dice details if bonus/penalty
+    if result.bonus_dice > 0 or result.penalty_dice > 0:
+        tens_str = ", ".join(str(t * 10 if t > 0 else "00") for t in result.tens_rolls)
+        if result.bonus_dice > 0:
+            dice_text = f"+{result.bonus_dice} bonus (tens: {tens_str})"
+        else:
+            dice_text = f"+{result.penalty_dice} penalty (tens: {tens_str})"
+        fields.append({"name": "Dice", "value": dice_text, "inline": False})
+
+    # Notes (major wound, skill checked, etc.)
+    if notes:
+        fields.append({"name": "Notes", "value": "\n".join(notes), "inline": False})
+
+    # Character and roller
+    if character_name:
+        fields.append({"name": "Character", "value": character_name, "inline": True})
+    if roller_name:
+        fields.append({"name": "Roller", "value": roller_name, "inline": True})
+
+    return {
+        "title": title,
+        "color": color,
+        "fields": fields,
+    }

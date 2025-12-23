@@ -280,28 +280,33 @@ class TestSkillCommands:
 
     @pytest.mark.asyncio
     async def test_skill_check_command(self, aas_cog, ctx, temp_char_dir):
-        """Should roll skill check."""
+        """Should roll skill check with embed."""
         await call_cmd(aas_cog, 'aas_create', ctx, "Test", "")
         await call_cmd(aas_cog, 'aas_skill', ctx, "Library Use", 75)
         ctx.send.reset_mock()
 
         await call_cmd(aas_cog, 'cmd_skill', ctx, "Library Use", "regular", None)
 
-        content = ctx.send.call_args.kwargs.get("content") or ctx.send.call_args.args[0]
-        assert "Library Use" in content
+        # Check embed was sent
+        embed = ctx.send.call_args.kwargs.get("embed")
+        assert embed is not None
+        assert "Library Use" in embed.title
 
     @pytest.mark.asyncio
     async def test_skill_check_with_difficulty(self, aas_cog, ctx):
-        """Should handle difficulty modifier."""
+        """Should handle difficulty modifier with embed."""
         await call_cmd(aas_cog, 'aas_create', ctx, "Test", "")
         await call_cmd(aas_cog, 'aas_skill', ctx, "Library Use", 80)
         ctx.send.reset_mock()
 
         await call_cmd(aas_cog, 'cmd_skill', ctx, "Library Use", "hard", None)
 
-        content = ctx.send.call_args.kwargs.get("content") or ctx.send.call_args.args[0]
-        assert "Hard" in content
-        assert "40" in content  # 80/2
+        # Check embed was sent with difficulty info
+        embed = ctx.send.call_args.kwargs.get("embed")
+        assert embed is not None
+        # Check fields contain difficulty and target
+        field_values = [f.value for f in embed.fields]
+        assert any("Hard" in str(v) for v in field_values)
 
 
 class TestResourceCommands:

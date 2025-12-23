@@ -43,6 +43,7 @@ from .roller import (
     roll_dice,
     parse_modifier,
     format_roll_result,
+    format_roll_embed_data,
 )
 from .importer import (
     parse_dholes_house_json,
@@ -859,13 +860,29 @@ Examples:
             character["skills"] = skills
             self._save_character(ctx.author.id, character)
 
-        msg = format_roll_result(result)
+        # Build notes for embed
+        notes = []
         if character.get("conditions", {}).get("major_wound"):
-            msg += "\n(Major wound: +1 penalty die)"
+            notes.append("⚠️ Major wound: +1 penalty die")
         if result.is_success:
-            msg += "\n✓ Skill checked for advancement"
+            notes.append("✓ Skill checked for advancement")
 
-        await ctx.send(msg)
+        # Create embed
+        embed_data = format_roll_embed_data(
+            result,
+            character_name=character.get("name", "Unknown"),
+            roller_name=ctx.author.display_name,
+            notes=notes if notes else None,
+        )
+        embed = discord.Embed(title=embed_data["title"], color=embed_data["color"])
+        for field in embed_data["fields"]:
+            embed.add_field(
+                name=field["name"],
+                value=field["value"],
+                inline=field.get("inline", False)
+            )
+
+        await ctx.send(embed=embed)
 
     @commands.command(name="char", aliases=["ch"])
     async def cmd_char(self, ctx, char_name: str, difficulty: str = "regular", modifier: str = None):
@@ -911,11 +928,27 @@ Examples:
             penalty_dice=penalty,
         )
 
-        msg = format_roll_result(result)
+        # Build notes for embed
+        notes = []
         if character.get("conditions", {}).get("major_wound"):
-            msg += "\n(Major wound: +1 penalty die)"
+            notes.append("⚠️ Major wound: +1 penalty die")
 
-        await ctx.send(msg)
+        # Create embed
+        embed_data = format_roll_embed_data(
+            result,
+            character_name=character.get("name", "Unknown"),
+            roller_name=ctx.author.display_name,
+            notes=notes if notes else None,
+        )
+        embed = discord.Embed(title=embed_data["title"], color=embed_data["color"])
+        for field in embed_data["fields"]:
+            embed.add_field(
+                name=field["name"],
+                value=field["value"],
+                inline=field.get("inline", False)
+            )
+
+        await ctx.send(embed=embed)
 
     # ========== Group 3: Resource Tracking ==========
 
