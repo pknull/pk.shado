@@ -19,18 +19,30 @@ pk.shado/
 ├── app.py                          # Main bot entry point
 ├── requirements.txt                # Python dependencies
 ├── .env                           # Environment variables (not in git)
-├── data/                          # Configuration and user data
-│   ├── timezone_regions.json     # Timezone validation data
-│   ├── manual_coordinates.json   # Geocoding fallback database
-│   ├── astrologer_birth_data.json # User birth data (not in git)
-│   └── thirstyboi_data.json      # Hydration tracking data (not in git)
+├── data/                          # User data (gitignored)
+│   ├── astrologer_birth_data.json # User birth data
+│   ├── thirstyboi_data.json      # Hydration tracking data
+│   └── aas_characters/           # AAS character JSON files
 ├── cogs/                          # Discord bot cogs (modules)
 │   ├── __init__.py
 │   ├── Utils.py                   # Shared utilities
-│   ├── Astrologer.py             # Astrology commands (refactored)
-│   ├── astrologer_data.py        # Astrology constants & data loaders
-│   ├── astrologer_geocoding.py   # Location/geocoding services
-│   ├── astrologer_core.py        # Chart computation engine
+│   │
+│   ├── aas/                       # AAS Character Management (CoC 7e)
+│   │   ├── __init__.py
+│   │   ├── cog.py                # Main cog with commands
+│   │   ├── data.py               # Skills, characteristics, success levels
+│   │   ├── roller.py             # d100 mechanics with bonus/penalty dice
+│   │   └── importer.py           # Dhole's House JSON import/export
+│   │
+│   ├── astrologer/               # Astrology commands
+│   │   ├── __init__.py
+│   │   ├── cog.py                # Main cog with commands
+│   │   ├── core.py               # Chart computation engine
+│   │   ├── geocoding.py          # Location/geocoding services
+│   │   ├── data.py               # Constants & data loaders
+│   │   ├── timezone_regions.json # Timezone validation data
+│   │   └── manual_coordinates.json # Geocoding fallback database
+│   │
 │   ├── Games.py                   # Dice, cards, coin flips
 │   ├── Weather.py                 # Weather forecasts
 │   ├── Thirstyboi.py             # Hydration tracking
@@ -43,7 +55,12 @@ pk.shado/
 │   ├── Passel.py                  # Miscellaneous commands
 │   ├── Pets.py                    # Pet commands
 │   └── Reminders.py              # Timers and reminders
-├── test_bot.py                    # Import validation test
+├── tests/                         # Test suite (159 tests)
+│   ├── test_aas_cog.py           # AAS cog command tests
+│   ├── test_aas_data.py          # AAS data/constants tests
+│   ├── test_aas_roller.py        # AAS dice mechanics tests
+│   ├── test_aas_importer.py      # AAS import/export tests
+│   └── test_kerykeion.py         # Astrology computation tests
 ├── TESTING.md                     # Testing guide
 ├── ARCHITECTURE.md               # This file
 └── CHANGELOG.md                   # Version history
@@ -109,38 +126,76 @@ async def setup(bot):
 
 ### Major Cogs
 
-#### Astrologer Cog (Modular Architecture)
+#### AAS Cog (Character Management)
 
-**Before**: 1426 lines in single file
-**After**: 800 lines + 3 support modules
+**Package**: `cogs/aas/`
 
-**Main Module** (`Astrologer.py`):
-- Discord command handlers
-- OpenAI integration for readings
-- User data persistence
-- Command: `!astrology`, `!setbirthday`, `!natalchart`, `!chartimage`
+BURGE (Call of Cthulhu 7e variant) character management system.
+
+**Main Module** (`cog.py`):
+- Character CRUD operations
+- Skill and characteristic checks with d100 mechanics
+- Resource tracking (HP, MP, Sanity, Luck)
+- XP advancement system
+- Major wound status tracking
+- Dhole's House JSON import/export
 
 **Support Modules**:
 
-1. **astrologer_data.py** - Data Layer
+1. **data.py** - Game Constants
+   - `CHARACTERISTICS` - STR, CON, DEX, SIZ, POW, APP, INT, EDU
+   - `STANDARD_SKILLS` - 40+ skills with base values
+   - `SKILL_ALIASES` - Common abbreviations
+   - `get_success_level()` - Critical/Extreme/Hard/Regular/Failure/Fumble
+   - Derived value formulas (HP max, MP max, Sanity max)
+
+2. **roller.py** - Dice Mechanics
+   - `roll_d100()` - Percentile roll with bonus/penalty dice
+   - `skill_check()` - Full skill check with difficulty levels
+   - `RollResult` dataclass with success level, dice details
+   - `format_roll_embed_data()` - Discord embed formatting
+
+3. **importer.py** - Character I/O
+   - `parse_dholes_house_json()` - Import from Dhole's House
+   - `export_to_dholes_house()` - Export to Dhole's House format
+   - Custom skill handling
+
+**Data Storage**: `data/aas_characters/{user_id}.json`
+
+#### Astrologer Cog (Astrology)
+
+**Package**: `cogs/astrologer/`
+
+Astrological readings and natal chart generation.
+
+**Main Module** (`cog.py`):
+- Discord command handlers
+- OpenAI integration for readings
+- User birth data persistence
+- Commands: `!astrology`, `!setbirthday`, `!natalchart`, `!chartimage`
+
+**Support Modules**:
+
+1. **data.py** - Data Layer
    - `load_timezone_regions()` - Load validation data
    - `load_manual_coordinates()` - Load geocoding database
-   - Constants: ZODIAC_SIGNS, SIGN_MAP, ZODIAC_DATES, etc.
+   - Constants: ZODIAC_SIGNS, SIGN_MAP, ZODIAC_DATES
 
-2. **astrologer_geocoding.py** - Location Services
+2. **geocoding.py** - Location Services
    - `GeocodingService` class
    - Geonames API integration
    - Manual coordinate lookup
    - Timezone validation
 
-3. **astrologer_core.py** - Computation Engine
+3. **core.py** - Computation Engine
    - `AstrologicalComputer` class
-   - Natal chart computation with caching
+   - Natal chart computation with SHA-256 caching
    - Transit calculations
-   - SVG chart generation
-   - Mathematical validation
+   - SVG chart generation via Kerykeion
 
-**Benefits**:
+**Data Storage**: `data/astrologer_birth_data.json`
+
+**Benefits of Package Structure**:
 - ✅ Single Responsibility Principle
 - ✅ Testable in isolation
 - ✅ Reusable outside Discord context
@@ -241,17 +296,36 @@ async def setup(bot):
 
 **Auto-save**: Every 69 seconds (nice)
 
+### AAS Character Data
+
+**Directory**: `data/aas_characters/`
+
+**Format**: One JSON file per user (`{user_id}.json`)
+```json
+{
+  "name": "Harvey Walters",
+  "occupation": "Professor",
+  "characteristics": {"STR": 40, "CON": 50, ...},
+  "skills": {"Library Use": {"value": 75, "checked": false}, ...},
+  "resources": {"hp": 10, "hp_max": 11, "mp": 13, ...},
+  "major_wound": false,
+  "history": [{"timestamp": "...", "note": "..."}]
+}
+```
+
 ### Configuration Data
 
-**Timezone Regions** (`data/timezone_regions.json`):
+**Timezone Regions** (`cogs/astrologer/timezone_regions.json`):
 - 9 major timezone regions
 - Coordinate boundaries for validation
 - Used by geocoding service
 
-**Manual Coordinates** (`data/manual_coordinates.json`):
+**Manual Coordinates** (`cogs/astrologer/manual_coordinates.json`):
 - 27 major cities
 - Fallback when API geocoding fails
 - Easy to extend
+
+Static config files are stored with their cog packages since they don't change at runtime.
 
 ## HTTP Request Handling
 
@@ -461,20 +535,31 @@ class Astrologer(commands.Cog):
 
 ## Testing Strategy
 
-### Unit Tests (Not Yet Implemented)
+### Unit Tests
 
-Suggested structure:
 ```
 tests/
-├── test_utils.py              # Test HTTP utils
-├── test_astrologer_core.py    # Test computations
-├── test_astrologer_geocoding.py  # Test location services
-└── test_astrologer_data.py    # Test data loading
+├── test_aas_cog.py           # AAS cog command tests (26 tests)
+├── test_aas_data.py          # AAS data/constants tests (40 tests)
+├── test_aas_roller.py        # AAS dice mechanics tests (42 tests)
+├── test_aas_importer.py      # AAS import/export tests (35 tests)
+└── test_kerykeion.py         # Astrology computation tests (16 tests)
 ```
 
-### Integration Tests
+**Total: 159 tests**
 
-Run `test_bot.py` for import validation.
+Run with:
+```bash
+pytest tests/ -v
+```
+
+### Test Categories
+
+- **Data Tests**: Skill defaults, success level calculation, derived values
+- **Roller Tests**: d100 mechanics, bonus/penalty dice, success thresholds
+- **Importer Tests**: Dhole's House JSON parsing, custom skills, export
+- **Cog Tests**: Discord command handling, character CRUD, resource updates
+- **Astrology Tests**: Natal chart computation, caching, determinism
 
 ### Manual Testing
 

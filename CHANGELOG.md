@@ -1,3 +1,31 @@
+## 0.23.0 (December 23, 2025)
+  - Reorganized cogs into package subdirectories (aas/, astrologer/)
+  - Fixed GitHub issues #13, #14, #15 for AAS cog:
+    - Custom skills import correctly from Dhole's House
+    - Skill lookups are now case-insensitive
+    - Dice rolls use Discord embeds with color-coded results
+  - Moved static config files to cog packages
+  - Simplified .gitignore to ignore entire data/ directory
+  - Updated documentation (README, ARCHITECTURE)
+
+## 0.22.0 (December 22, 2025)
+  - Added AAS cog for BURGE (Call of Cthulhu 7e) character management:
+    - Character creation and management
+    - Skill and characteristic checks with bonus/penalty dice
+    - Resource tracking (HP, MP, Sanity, Luck)
+    - Dhole's House JSON import/export
+    - XP advancement system
+    - Major wound status tracking
+  - Added comprehensive test suite (159 tests)
+  - Created pytest.ini for pytest-asyncio configuration
+
+## 0.21.0 (December 7, 2025)
+  - Upgraded rpg-dice library to v0.2
+  - Added total check syntax (t>=N) and total modifier syntax (=+N)
+  - Added DiceProbability analyzer with exact combinatorics
+  - Security hardening: removed debug_token fallback, secure temp files
+  - Repository cleanup: removed deprecated backup files
+
 ## 0.20.0 (July 27, 2021)
 
 
