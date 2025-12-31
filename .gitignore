@@ -112,3 +112,4 @@ ENV/
 
 # User data directory (all runtime data, no config)
 data/
+asha/
