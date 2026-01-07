@@ -1,1 +1,0 @@
-/home/pknull/Code/pk.shado/asha/hooks/common.sh

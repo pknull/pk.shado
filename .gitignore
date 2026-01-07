@@ -113,3 +113,9 @@ ENV/
 # User data directory (all runtime data, no config)
 data/
 asha/
+
+# Asha runtime
+.asha/
+Memory/sessions/
+Memory/vector_db/
+Memory/reasoning_bank/
