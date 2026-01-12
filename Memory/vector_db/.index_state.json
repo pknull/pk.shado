@@ -1,11 +1,11 @@
 {
-  "git_hash": "b7f2d64dbaebd7a6fb30bcdad22d41b463826ebf",
+  "git_hash": "8ea78ff36b8bb748eb79a072684c1a865c30b3f8",
   "files": {
     ".claude/commands/index.md": "381883e4d1f49f9ebf9f984611b259ca",
     ".claude/commands/save.md": "bfe0655063f5ff7f04913ff81057024d",
     "Memory/CLAUDE.md": "badcced6b4b06efc1e556a664c429915",
-    "Memory/activeContext.md": "00c9c3b190efc663c07578565e09b28c",
-    "Memory/communicationStyle.md": "927d0451220b860fe12092692cf1714d",
+    "Memory/activeContext.md": "1702e0d0f33199fe2a01d8fd7506da92",
+    "Memory/communicationStyle.md": "9fc75a1a4a5125f72fe025e92f930b8f",
     "Memory/projectbrief.md": "b8a607476b33cb1e7b5ee2f75b18d20a",
     "Memory/techEnvironment.md": "6a7ccd6f4ee0b00c22a611a10805aa5b",
     "Memory/workflowProtocols.md": "f885133b385d20dbcb21ec5d480ee939",
@@ -30,7 +30,7 @@
     "asha/templates/techEnvironment.md": "340a52996fa5dba249523df90318a5b3",
     "asha/templates/workflowProtocols.md": "f885133b385d20dbcb21ec5d480ee939"
   },
-  "last_ingest": "2025-12-22T19:07:00.570853",
+  "last_ingest": "2026-01-12T13:28:31.035847",
   "config": {
     "chunk_size": 4000,
     "chunk_overlap": 400,

@@ -1,6 +1,6 @@
 ---
-version: 1.2.0
-lastUpdated: 2025-12-23
+version: 1.3.0
+lastUpdated: 2026-01-12
 lifecycle: active
 stakeholder: pknull
 changeTrigger: session-completion
@@ -13,10 +13,27 @@ dependencies: [projectbrief.md, techEnvironment.md]
 ## Current Status
 
 **Phase**: Active Development
-**Date**: 2025-12-23
-**Focus**: AAS Character Management System (Phase 1 complete, all issues resolved)
+**Date**: 2026-01-12
+**Focus**: AAS Character Management System (Phase 2: GitHub issues #16, #17 closed, style cleanup)
 
 ## Recent Changes
+
+- GitHub Issues #16, #17 + Style Refactor (2026-01-12):
+  - Issue #16: Enable rolling luck/san as characteristics
+    - Added `ROLLABLE_STATS` constant to `data.py`
+    - Modified `!char` command to accept luck/san
+    - Added `!luck roll [modifier]` and `!san roll [modifier]` syntax
+    - Added `_roll_resource()` helper method
+  - Issue #17: Add XP management command
+    - Added `!xp [delta]` command for viewing/modifying XP
+    - Added comprehensive test `test_xp_pool_shared_across_commands`
+    - Verified XP shared correctly between `!xp`, `!aas set xp`, `!aas spend`
+  - Style refactoring (from local code review):
+    - Added `RESOURCE_KEY_MAP` constant to centralize resource key mapping
+    - Added `_get_resource_value()` helper to eliminate duplicate lookups
+    - Made control flow consistent (early return pattern in cmd_luck)
+  - Both GitHub issues closed via `gh issue close`
+  - 151 tests passing
 
 - Cog Restructure & Bug Fixes (2025-12-23):
   - Reorganized cogs into package subdirectories:
@@ -79,6 +96,15 @@ None critical. API key absence warnings retained for operator visibility.
 None.
 
 ## Session Notes
+
+GitHub issues + refactoring (2026-01-12):
+- Closed GitHub issues #16 (luck/san rolling) and #17 (XP command)
+- Local code review identified style issues; refactored for consistency
+- Key learnings:
+  - Resource key mapping (`san` → `sanity`) belongs in a constant, not inline dicts
+  - Helper methods reduce duplication and improve testability
+  - Early return pattern more readable than if/else for guard clauses
+- 151 tests passing (down from 159 due to test consolidation in prior session)
 
 Documentation update (2025-12-23, session 2):
 - Updated README.md with comprehensive command reference (50+ commands)
