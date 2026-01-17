@@ -1,4 +1,4 @@
-from .Utils import *
+from .Utils import make_embed
 
 import discord
 import logging
@@ -25,7 +25,7 @@ class Games(commands.Cog):
     async def on_unload(self):
         logger.info('Games cog unloaded')
 
-    @commands.command(pass_context=True)
+    @commands.command()
     async def dice(self, ctx, roll='1d1'):
         """Roll some dice! Great for RPG and such.
         See here for the roll syntax: https://github.com/pknull/rpg-dice"""
@@ -41,7 +41,7 @@ class Games(commands.Cog):
         else:
             await ctx.message.channel.send("Error parsing dice.")
 
-    @commands.command(pass_context=True)
+    @commands.command()
     async def card(self, ctx, card: str, count=1):
         """Deal a hand of cards. Doesn't currently support games.
         cards: [standard,shadow,tarot,uno]"""
@@ -80,7 +80,7 @@ class Games(commands.Cog):
         else:
             await ctx.message.channel.send("Error parsing cards.")
 
-    @commands.command(pass_context=True)
+    @commands.command()
     async def coin(self, ctx, count=1):
         """Flip a coin. Add a number for multiples."""
         tosser = Tosser(Coin)
@@ -92,7 +92,7 @@ class Games(commands.Cog):
         else:
             await ctx.message.channel.send("Error parsing coin.")
 
-    @commands.command(pass_context=True)
+    @commands.command()
     async def eightball(self, ctx, count=1):
         """Rolls an eightball!"""
         tosser = Tosser(EightBall)
@@ -104,10 +104,17 @@ class Games(commands.Cog):
         else:
             await ctx.message.channel.send("Error parsing eightball.")
 
-    @commands.command(pass_context=True)
+    @commands.command()
     async def toss(self, ctx, items, count=1, unique='t'):
         """Pick an amount from a list"""
+        MAX_ITEMS = 100
+        MAX_ITEM_LENGTH = 200
+
         words = items.split(',')
+        if len(words) > MAX_ITEMS:
+            await ctx.message.channel.send(f"Too many items. Maximum is {MAX_ITEMS}.")
+            return
+        words = [w.strip()[:MAX_ITEM_LENGTH] for w in words]
 
         user_list = lambda: None
         setattr(user_list, 'SIDES', words)

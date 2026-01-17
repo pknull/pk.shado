@@ -4,11 +4,13 @@ import json
 import asyncio
 import logging
 
-# Third party and local imports
-from .Utils import *
+# Third party imports
 from discord.ext import commands
 
 logger = logging.getLogger('thirstyboi')
+
+# Autosave interval in seconds
+AUTOSAVE_INTERVAL_SECONDS = 69
 
 class UserData:
     '''Class to handle user preferences.'''
@@ -89,7 +91,7 @@ class Thirst(commands.Cog):
         self.allowed_chan = allowed_chan
 
         # Self set params
-        self.interval = 69
+        self.interval = AUTOSAVE_INTERVAL_SECONDS
 
         # Begin background task since object is loaded
         self.bot.loop.create_task(self.autosave())
@@ -146,7 +148,7 @@ class Thirst(commands.Cog):
             await self.bot.get_channel(user_data.channel).send("Remember to stay hydrated <@%i>!" % user)
             user_data.remind()
 
-    @commands.command(name="sip", pass_context=True, brief="Tells the bot you've hydrated yourself.")
+    @commands.command(name="sip", brief="Tells the bot you've hydrated yourself.")
     async def sip(self, ctx: commands.Context, *time):
         '''Tells the bot you've hydrated yourself'''
         # Check permissions
@@ -183,7 +185,7 @@ class Thirst(commands.Cog):
         await self.remind(ctx.author.id)
 
 
-    @commands.command(name="total", pass_context=True, brief="Displays how many times you have drank water.")
+    @commands.command(name="total", brief="Displays how many times you have drank water.")
     async def total(self, ctx: commands.Context):
         '''Tells the user how many times they have drank.'''
         # Check permissions
@@ -203,7 +205,7 @@ class Thirst(commands.Cog):
             await ctx.send("You have not enabled direct messages. Enable them with ``!dmme`` first")
             return
 
-    @commands.command(name="stop", pass_context=True)
+    @commands.command(name="stop")
     async def stop(self, ctx: commands.Context):
         '''Stops the bot from sending users messages.'''
         # Check permissions
@@ -221,7 +223,7 @@ class Thirst(commands.Cog):
             else:
                 await ctx.send("I will resume messaging you")
 
-    @commands.command(name="dmme", pass_context=True)
+    @commands.command(name="dmme")
     async def dmme(self, ctx: commands.Context):
         '''Start the bot sending messages to a user.'''
         # Check permissions
@@ -241,7 +243,7 @@ class Thirst(commands.Cog):
         else:
             await ctx.send("I will no longer be able to send you direct messages")
 
-    @commands.command(name="allow_c", pass_context=True)
+    @commands.command(name="allow_c")
     @commands.has_permissions(manage_channels=True)
     async def allow_c(self, ctx: commands.Context):
         '''Allows editors or modorators of channels to toggle this option on channel.'''
@@ -331,15 +333,10 @@ async def setup(bot):
     users = None
     allowed_chan = None
     
-    # Attempt to read in user data
-    try:
-        users, allowed_chan = dat_import()
-    except:
-        # If pickle or read fail, somethings fucked, just remake it
-        users = dict()
-        allowed_chan = dict()
-
-        # Export it out so the file exists
+    # Load user data (dat_import handles errors internally, returns empty dicts on failure)
+    users, allowed_chan = dat_import()
+    if not users and not allowed_chan:
+        # Ensure data file exists for fresh installs
         dat_export(users, allowed_chan)
 
     await bot.add_cog(Thirst(bot, users, allowed_chan))

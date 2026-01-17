@@ -1,6 +1,6 @@
 ---
-version: 1.3.0
-lastUpdated: 2026-01-12
+version: 1.4.0
+lastUpdated: 2026-01-17
 lifecycle: active
 stakeholder: pknull
 changeTrigger: session-completion
@@ -13,10 +13,23 @@ dependencies: [projectbrief.md, techEnvironment.md]
 ## Current Status
 
 **Phase**: Active Development
-**Date**: 2026-01-12
-**Focus**: AAS Character Management System (Phase 2: GitHub issues #16, #17 closed, style cleanup)
+**Date**: 2026-01-17
+**Focus**: Code audit remediation (security and code quality fixes)
 
 ## Recent Changes
+
+- Code Audit Remediation (2026-01-17):
+  - Security: Added `@commands.is_owner()` to `killbot` command (app.py:137)
+  - Code quality: Removed bare `except:` clause in Thirstyboi.py setup() function
+  - Code quality: Removed unused `import string` from app.py
+  - Code quality: Replaced wildcard imports with explicit imports
+    - Games.py: `from .Utils import *` → `from .Utils import make_embed`
+    - Thirstyboi.py: Removed unused `from .Utils import *` entirely
+  - Code quality: Removed deprecated `pass_context=True` from 10 command decorators
+  - Code quality: Added input validation to `!toss` command (max 100 items, 200 char limit)
+  - Code quality: Extracted magic number to `AUTOSAVE_INTERVAL_SECONDS` constant
+  - 161 tests passing
+  - AUDIT-REVIEW.md documents remaining lower-priority items
 
 - GitHub Issues #16, #17 + Style Refactor (2026-01-12):
   - Issue #16: Enable rolling luck/san as characteristics
@@ -96,6 +109,18 @@ None critical. API key absence warnings retained for operator visibility.
 None.
 
 ## Session Notes
+
+Code audit remediation (2026-01-17):
+- Implemented fixes from AUDIT-REVIEW.md findings
+- Critical: killbot command now requires bot owner permission
+- High: Removed bare except that masked SystemExit/KeyboardInterrupt
+- Medium: Cleaned up wildcard imports, deprecated parameters, magic numbers
+- Key learnings:
+  - `dat_import()` in Thirstyboi.py already handles all exceptions internally; outer try/except was redundant
+  - Thirstyboi.py never actually used any Utils functions (wildcard import was dead code)
+  - `pass_context=True` deprecated since discord.py 1.0; context always passed automatically
+- Not addressed (requires infrastructure decisions): secrets management, rate limiting, requirements pinning
+- 161 tests passing
 
 GitHub issues + refactoring (2026-01-12):
 - Closed GitHub issues #16 (luck/san rolling) and #17 (XP command)

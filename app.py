@@ -1,6 +1,5 @@
 import os
 import logging
-import string
 import sys
 import discord
 import asyncio
@@ -134,7 +133,8 @@ async def on_command_error(ctx, error):
 async def on_command_completion(ctx):
     root.info('parsed command:%s', ctx.message.content)
 
-@bot.command(pass_context=True)
+@bot.command()
+@commands.is_owner()
 async def killbot(ctx):
     debug_logger.info("Shutting down!")
     try:
